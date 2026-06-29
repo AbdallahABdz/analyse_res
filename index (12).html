@@ -1,0 +1,1202 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Analyse des résultats — PV de délibération</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+  :root {
+    --paper: #F7F5F0;
+    --paper-raised: #FFFFFF;
+    --ink: #1C2B33;
+    --ink-soft: #4A5A62;
+    --line: #D8D2C4;
+    --line-soft: #E8E4D8;
+    --accent: #0B5D52;
+    --accent-soft: #DCEAE6;
+    --warn: #B8722A;
+    --warn-soft: #F5E6D3;
+    --warn-strong: #9A5C1E;
+    --fail: #9B3B3B;
+    --fail-soft: #F3E0DF;
+    --serif: 'Source Serif 4', Georgia, serif;
+    --sans: 'IBM Plex Sans', -apple-system, sans-serif;
+    --mono: 'IBM Plex Mono', monospace;
+    --radius: 3px;
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    line-height: 1.5;
+    min-height: 100vh;
+  }
+
+  .wrap {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 24px 80px;
+  }
+
+  /* ---------- Header ---------- */
+  header {
+    padding: 48px 0 28px;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 40px;
+  }
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .eyebrow::before {
+    content: '';
+    display: inline-block;
+    width: 22px;
+    height: 1px;
+    background: var(--accent);
+  }
+  h1 {
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: clamp(28px, 4vw, 40px);
+    margin: 0 0 10px;
+    letter-spacing: -0.01em;
+  }
+  header p {
+    color: var(--ink-soft);
+    max-width: 620px;
+    margin: 0;
+    font-size: 15px;
+  }
+
+  /* ---------- Level selector ---------- */
+  .level-select {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+  }
+  .level-group-label {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--ink-soft);
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--line-soft);
+  }
+  .level-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 10px;
+  }
+  .level-btn {
+    background: var(--paper-raised);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    text-align: left;
+    cursor: pointer;
+    font-family: var(--sans);
+    color: var(--ink);
+    transition: border-color .15s, background .15s, transform .1s;
+  }
+  .level-btn:hover {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+  }
+  .level-btn:active { transform: scale(0.98); }
+  .level-btn.active {
+    border-color: var(--accent);
+    background: var(--accent);
+    color: #fff;
+  }
+  .level-btn.active .level-btn-sub { color: rgba(255,255,255,0.75); }
+  .level-btn.loading { opacity: 0.6; cursor: wait; }
+  .level-btn-name {
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: 15.5px;
+    display: block;
+  }
+  .level-btn-sub {
+    display: block;
+    font-family: var(--mono);
+    font-size: 10.5px;
+    color: var(--ink-soft);
+    margin-top: 3px;
+  }
+
+  /* ---------- Status bar ---------- */
+  .status-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 28px;
+    padding: 12px 4px;
+    font-size: 13px;
+  }
+  .status-left {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    color: var(--ink-soft);
+  }
+  .status-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--line);
+    flex-shrink: 0;
+  }
+  .status-dot.ok { background: var(--accent); }
+  .status-dot.err { background: var(--fail); }
+  .status-dot.loading { background: var(--warn); animation: pulse 1s infinite; }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.35; } }
+  .manual-link {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--accent);
+    text-decoration: underline;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .stamp-zone.manual {
+    display: none;
+    margin-top: 10px;
+  }
+  .stamp-zone.manual.show { display: block; }
+
+  /* ---------- Dropzone ---------- */
+
+  .stamp-zone {
+    position: relative;
+    background: var(--paper-raised);
+    border: 1.5px dashed var(--line);
+    border-radius: var(--radius);
+    padding: 56px 32px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color .2s, background .2s;
+    overflow: hidden;
+  }
+  .stamp-zone:hover, .stamp-zone.drag {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+  }
+  .stamp-zone input { display: none; }
+
+  .stamp-icon {
+    width: 52px;
+    height: 52px;
+    margin: 0 auto 18px;
+    color: var(--ink-soft);
+  }
+  .stamp-zone-title {
+    font-family: var(--serif);
+    font-size: 20px;
+    font-weight: 600;
+    margin: 0 0 6px;
+  }
+  .stamp-zone-sub {
+    color: var(--ink-soft);
+    font-size: 13.5px;
+    margin: 0;
+  }
+  .stamp-zone-sub strong { color: var(--accent); font-weight: 600; }
+
+  /* le tampon qui s'imprime à l'import */
+  .stamp-mark {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(-9deg) scale(0.6);
+    width: 200px;
+    height: 200px;
+    border: 4px solid var(--accent);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    color: var(--accent);
+  }
+  .stamp-mark.show {
+    animation: stampDown .5s cubic-bezier(.2,.9,.3,1.2) forwards;
+  }
+  @keyframes stampDown {
+    0%   { opacity: 0; transform: translate(-50%, -50%) rotate(-9deg) scale(2.2); }
+    55%  { opacity: 0.9; transform: translate(-50%, -50%) rotate(-9deg) scale(0.92); }
+    70%  { opacity: 0.9; transform: translate(-50%, -50%) rotate(-9deg) scale(1.04); }
+    100% { opacity: 0.85; transform: translate(-50%, -50%) rotate(-9deg) scale(1); }
+  }
+  .stamp-mark-inner {
+    font-family: var(--serif);
+    font-weight: 700;
+    font-size: 15px;
+    letter-spacing: 0.08em;
+    text-align: center;
+    line-height: 1.5;
+  }
+
+  .file-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 18px;
+    padding: 7px 14px;
+    background: var(--accent-soft);
+    border-radius: 100px;
+    font-family: var(--mono);
+    font-size: 12.5px;
+    color: var(--accent);
+  }
+  .file-pill button {
+    border: none;
+    background: none;
+    color: var(--accent);
+    cursor: pointer;
+    font-family: var(--mono);
+    font-size: 12.5px;
+    text-decoration: underline;
+    padding: 0;
+  }
+
+  .error-msg {
+    display: none;
+    margin-top: 16px;
+    padding: 12px 16px;
+    background: var(--fail-soft);
+    border-left: 3px solid var(--fail);
+    color: var(--fail);
+    font-size: 13.5px;
+    border-radius: var(--radius);
+    text-align: left;
+  }
+  .error-msg.show { display: block; }
+
+  /* ---------- Controls (tranches/seuil) ---------- */
+  .controls {
+    display: none;
+    margin-top: 28px;
+    background: var(--paper-raised);
+    border: 1px solid var(--line-soft);
+    border-radius: var(--radius);
+    padding: 18px 22px;
+    gap: 28px;
+    flex-wrap: wrap;
+    align-items: flex-end;
+  }
+  .controls.show { display: flex; }
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .field label {
+    font-family: var(--mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ink-soft);
+  }
+  .field .range-inputs {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .field input[type="number"] {
+    width: 64px;
+    padding: 7px 8px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    font-family: var(--mono);
+    font-size: 13px;
+    background: var(--paper);
+    color: var(--ink);
+  }
+  .field input[type="number"]:focus,
+  .stamp-zone:focus-visible,
+  button:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+  .field .dash { color: var(--ink-soft); font-family: var(--mono); }
+  .swatch {
+    width: 12px; height: 12px;
+    border-radius: 2px;
+    display: inline-block;
+    margin-right: 4px;
+    vertical-align: -1px;
+  }
+
+  /* ---------- Results ---------- */
+  #results { display: none; }
+  #results.show { display: block; }
+
+  .stat-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1px;
+    background: var(--line-soft);
+    border: 1px solid var(--line-soft);
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin: 36px 0 0;
+  }
+  .stat-card {
+    background: var(--paper-raised);
+    padding: 20px 18px;
+  }
+  .stat-card .label {
+    font-family: var(--mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--ink-soft);
+    margin-bottom: 8px;
+  }
+  .stat-card .value {
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: 28px;
+    line-height: 1;
+  }
+  .stat-card .value sup {
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--ink-soft);
+  }
+  .stat-card.accent .value { color: var(--accent); }
+  .stat-card.warn .value { color: var(--warn-strong); }
+  .stat-card.fail .value { color: var(--fail); }
+
+  section.block {
+    margin-top: 48px;
+  }
+  .block-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 14px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--line);
+  }
+  .block-head h2 {
+    font-family: var(--serif);
+    font-size: 21px;
+    font-weight: 600;
+    margin: 0;
+  }
+  .block-head .count {
+    font-family: var(--mono);
+    font-size: 12.5px;
+    color: var(--ink-soft);
+  }
+  .block-note {
+    font-size: 13.5px;
+    color: var(--ink-soft);
+    margin: -6px 0 16px;
+  }
+
+  /* tranches highlight cards */
+  .tranche-summary {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 8px;
+  }
+  @media (max-width: 640px) { .tranche-summary { grid-template-columns: 1fr; } }
+  .tranche-card {
+    border-radius: var(--radius);
+    padding: 16px 18px;
+    border: 1px solid;
+  }
+  .tranche-card.t1 { background: var(--warn-soft); border-color: #E3C397; }
+  .tranche-card.t2 { background: #FCE9C9; border-color: #E0A95C; }
+  .tranche-card .tc-range {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--ink-soft);
+    margin-bottom: 4px;
+  }
+  .tranche-card .tc-count {
+    font-family: var(--serif);
+    font-size: 26px;
+    font-weight: 700;
+  }
+  .tranche-card .tc-count span {
+    font-family: var(--sans);
+    font-weight: 500;
+    font-size: 13px;
+    color: var(--ink-soft);
+  }
+
+  /* table */
+  .table-scroll {
+    overflow-x: auto;
+    border: 1px solid var(--line-soft);
+    border-radius: var(--radius);
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
+    background: var(--paper-raised);
+    min-width: 720px;
+  }
+  thead th {
+    background: var(--ink);
+    color: var(--paper);
+    font-family: var(--mono);
+    font-weight: 500;
+    font-size: 11.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    text-align: left;
+    padding: 11px 14px;
+    position: sticky;
+    top: 0;
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+  }
+  thead th:hover { background: #2A3E47; }
+  thead th .arrow { opacity: 0.5; margin-left: 4px; font-size: 10px; }
+  tbody td {
+    padding: 9px 14px;
+    border-bottom: 1px solid var(--line-soft);
+    white-space: nowrap;
+  }
+  tbody tr:last-child td { border-bottom: none; }
+  td.num, th.num { text-align: right; font-family: var(--mono); }
+  td.name { font-weight: 500; white-space: normal; min-width: 180px; }
+  td.mg { font-family: var(--mono); font-weight: 600; text-align: right; }
+
+  tr.row-admis { background: var(--accent-soft); }
+  tr.row-t1 { background: var(--warn-soft); }
+  tr.row-t2 { background: #FCE9C9; }
+  tr.row-zero { background: var(--fail-soft); color: var(--fail); }
+  tr.row-zero td.name { color: var(--fail); }
+
+  .status-pill {
+    display: inline-block;
+    padding: 2px 9px;
+    border-radius: 100px;
+    font-size: 11px;
+    font-family: var(--mono);
+    font-weight: 500;
+  }
+  .row-admis .status-pill { background: var(--accent); color: #fff; }
+  .row-t1 .status-pill { background: var(--warn); color: #fff; }
+  .row-t2 .status-pill { background: var(--warn-strong); color: #fff; }
+  .row-zero .status-pill { background: var(--fail); color: #fff; }
+  tr:not(.row-admis):not(.row-t1):not(.row-t2):not(.row-zero) .status-pill {
+    background: var(--line-soft); color: var(--ink-soft);
+  }
+
+  .legend {
+    display: flex;
+    gap: 18px;
+    flex-wrap: wrap;
+    margin-top: 14px;
+    font-size: 12.5px;
+    color: var(--ink-soft);
+  }
+  .legend span { display: inline-flex; align-items: center; }
+
+  /* zero list */
+  .zero-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .zero-list .zchip {
+    background: var(--fail-soft);
+    color: var(--fail);
+    padding: 6px 12px;
+    border-radius: var(--radius);
+    font-size: 13px;
+    border: 1px solid #E0BFBD;
+  }
+
+  /* actions */
+  .actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 36px;
+  }
+  button.btn {
+    font-family: var(--sans);
+    font-weight: 600;
+    font-size: 13.5px;
+    padding: 10px 18px;
+    border-radius: var(--radius);
+    cursor: pointer;
+    border: 1px solid var(--line);
+    background: var(--paper-raised);
+    color: var(--ink);
+    transition: background .15s, border-color .15s;
+  }
+  button.btn:hover { border-color: var(--accent); color: var(--accent); }
+  button.btn.primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+  button.btn.primary:hover { background: #094A41; }
+
+  footer {
+    margin-top: 64px;
+    padding-top: 20px;
+    border-top: 1px solid var(--line);
+    font-size: 12px;
+    color: var(--ink-soft);
+    font-family: var(--mono);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .stamp-mark.show { animation: none; opacity: 0.85; transform: translate(-50%, -50%) rotate(-9deg) scale(1); }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <p class="eyebrow">Portail de délibération</p>
+    <h1>Analyse des résultats par niveau</h1>
+    <p>Choisissez un niveau pour charger automatiquement son PV de délibération et repérer les étudiants proches du seuil de réussite.</p>
+  </header>
+
+  <div class="level-select" id="levelSelect">
+    <div class="level-group" data-group="Ingénieur">
+      <div class="level-group-label">Ingénieur</div>
+      <div class="level-grid"></div>
+    </div>
+    <div class="level-group" data-group="Licence — Électrotechnique / Automobile">
+      <div class="level-group-label">Licence — Électrotechnique / Automobile</div>
+      <div class="level-grid"></div>
+    </div>
+    <div class="level-group" data-group="Master">
+      <div class="level-group-label">Master</div>
+      <div class="level-grid"></div>
+    </div>
+  </div>
+
+  <div class="status-bar" id="statusBar">
+    <div class="status-left">
+      <span class="status-dot" id="statusDot"></span>
+      <span id="statusText">Sélectionnez un niveau ci-dessus</span>
+    </div>
+    <label class="manual-link" id="manualTrigger">déposer un fichier manuellement</label>
+  </div>
+
+  <div class="stamp-zone manual" id="dropzone" tabindex="0" role="button" aria-label="Importer un fichier Excel">
+    <input type="file" id="fileInput" accept=".xlsx,.xls">
+    <svg class="stamp-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4">
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+      <path d="M14 2v6h6"/>
+      <path d="M9 13h6M9 17h4"/>
+    </svg>
+    <p class="stamp-zone-title">Déposer un fichier .xlsx</p>
+    <p class="stamp-zone-sub">ou <strong>cliquez pour parcourir</strong> — utile si le fichier n'est pas encore dans le dépôt</p>
+    <div class="stamp-mark" id="stampMark">
+      <div class="stamp-mark-inner">REÇU<br>ANALYSÉ</div>
+    </div>
+    <div class="file-pill" id="filePill" style="display:none">
+      <span id="fileName"></span>
+      <button type="button" id="clearFile">retirer</button>
+    </div>
+    <div class="error-msg" id="errorMsg"></div>
+  </div>
+
+  <div class="controls" id="controls">
+    <div class="field">
+      <label for="seuil">Seuil de réussite</label>
+      <input type="number" id="seuil" value="10" step="0.5" min="0" max="20">
+    </div>
+    <div class="field">
+      <label><span class="swatch" style="background:#E0A95C"></span>Tranche critique 1</label>
+      <div class="range-inputs">
+        <input type="number" id="t1lo" value="8.5" step="0.1">
+        <span class="dash">–</span>
+        <input type="number" id="t1hi" value="9.0" step="0.1">
+      </div>
+    </div>
+    <div class="field">
+      <label><span class="swatch" style="background:#C98425"></span>Tranche critique 2</label>
+      <div class="range-inputs">
+        <input type="number" id="t2lo" value="9.0" step="0.1">
+        <span class="dash">–</span>
+        <input type="number" id="t2hi" value="9.99" step="0.1">
+      </div>
+    </div>
+    <button class="btn primary" id="recalc">Recalculer</button>
+  </div>
+
+  <div id="results">
+
+    <div class="stat-row" id="statRow"></div>
+
+    <section class="block">
+      <div class="block-head">
+        <h2>Étudiants proches du seuil</h2>
+        <span class="count" id="trancheCount"></span>
+      </div>
+      <p class="block-note">Les deux tranches définies ci-dessus, classées par moyenne générale décroissante.</p>
+      <div class="tranche-summary" id="trancheSummary"></div>
+    </section>
+
+    <section class="block" id="zeroBlock">
+      <div class="block-head">
+        <h2>Notes nulles</h2>
+        <span class="count" id="zeroCount"></span>
+      </div>
+      <p class="block-note">Moyenne générale à 0.00 — absence totale probable, dossier à vérifier par le jury.</p>
+      <div class="zero-list" id="zeroList"></div>
+    </section>
+
+    <section class="block">
+      <div class="block-head">
+        <h2>Liste complète</h2>
+        <span class="count" id="fullCount"></span>
+      </div>
+      <div class="table-scroll">
+        <table id="fullTable">
+          <thead>
+            <tr>
+              <th data-key="num" class="num">N° <span class="arrow">↕</span></th>
+              <th data-key="nom">Nom et prénom <span class="arrow">↕</span></th>
+              <th data-key="matricule">Matricule <span class="arrow">↕</span></th>
+              <th data-key="s1" class="num">Moy. S1 <span class="arrow">↕</span></th>
+              <th data-key="s2" class="num">Moy. S2 <span class="arrow">↕</span></th>
+              <th data-key="mg" class="num">MG <span class="arrow">↕</span></th>
+              <th data-key="statut">Statut</th>
+            </tr>
+          </thead>
+          <tbody id="fullTbody"></tbody>
+        </table>
+      </div>
+      <div class="legend">
+        <span><span class="swatch" style="background:#0B5D52"></span>Admis</span>
+        <span><span class="swatch" style="background:#C98425"></span>Critique (proche +)</span>
+        <span><span class="swatch" style="background:#E0A95C"></span>Critique</span>
+        <span><span class="swatch" style="background:#9B3B3B"></span>Note nulle</span>
+      </div>
+    </section>
+
+    <div class="actions">
+      <button class="btn" id="exportCsv">Exporter en CSV</button>
+      <button class="btn" id="printBtn">Imprimer / PDF</button>
+    </div>
+  </div>
+
+  <footer>Analyse effectuée localement dans votre navigateur — aucune donnée n'est transmise à un serveur.</footer>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  let students = [];
+  let sheetTitle = "";
+  let sortState = { key: "mg", dir: -1 };
+  let activeLevelId = null;
+
+  // Chemins relatifs au fichier index.html : data/<fichier>.xlsx
+  // (à servir depuis GitHub Pages ou un dossier local avec un serveur HTTP)
+  const LEVELS = [
+    { group: "Ingénieur", id: "1ing", name: "1ère ING", file: "data/1ere-ING.xlsx" },
+    { group: "Ingénieur", id: "2ing", name: "2ème ING", file: "data/2eme-ING.xlsx" },
+    { group: "Ingénieur", id: "3ing", name: "3ème ING", file: "data/3eme-ING.xlsx" },
+
+    { group: "Licence — Électrotechnique / Automobile", id: "l1elmaut", name: "L1 ELM Automobile", file: "data/L1-ELM-Automobile.xlsx" },
+    { group: "Licence — Électrotechnique / Automobile", id: "l2aut", name: "L2 Aut", file: "data/L2-Aut.xlsx" },
+    { group: "Licence — Électrotechnique / Automobile", id: "l2elmaut", name: "L2 ELM Automobile", file: "data/L2-ELM-Automobile.xlsx" },
+    { group: "Licence — Électrotechnique / Automobile", id: "l2elm", name: "L2 ELM", file: "data/L2-ELM.xlsx" },
+    { group: "Licence — Électrotechnique / Automobile", id: "l2elt", name: "L2 ELT", file: "data/L2-ELT.xlsx" },
+    { group: "Licence — Électrotechnique / Automobile", id: "l3aut", name: "L3 Aut", file: "data/L3-Aut.xlsx" },
+    { group: "Licence — Électrotechnique / Automobile", id: "l3elm", name: "L3 ELM", file: "data/L3-ELM.xlsx" },
+    { group: "Licence — Électrotechnique / Automobile", id: "l3elt", name: "L3 ELT", file: "data/L3-ELT.xlsx" },
+
+    { group: "Master", id: "m1aut", name: "M1 Aut", file: "data/M1-Aut.xlsx" },
+    { group: "Master", id: "m1cmd", name: "M1 CMD", file: "data/M1-CMD.xlsx" },
+    { group: "Master", id: "m1elm", name: "M1 ELM", file: "data/M1-ELM.xlsx" },
+    { group: "Master", id: "m1er", name: "M1 ER", file: "data/M1-ER.xlsx" },
+    { group: "Master", id: "m2aut", name: "M2 Aut", file: "data/M2-Aut.xlsx" },
+    { group: "Master", id: "m2cmd", name: "M2 CMD", file: "data/M2-CMD.xlsx" },
+    { group: "Master", id: "m2elm", name: "M2 ELM", file: "data/M2-ELM.xlsx" },
+    { group: "Master", id: "m2er", name: "M2 ER", file: "data/M2-ER.xlsx" },
+  ];
+
+  const dropzone = document.getElementById('dropzone');
+  const fileInput = document.getElementById('fileInput');
+  const filePill = document.getElementById('filePill');
+  const fileName = document.getElementById('fileName');
+  const clearFile = document.getElementById('clearFile');
+  const errorMsg = document.getElementById('errorMsg');
+  const stampMark = document.getElementById('stampMark');
+  const controls = document.getElementById('controls');
+  const results = document.getElementById('results');
+  const statusDot = document.getElementById('statusDot');
+  const statusText = document.getElementById('statusText');
+  const manualTrigger = document.getElementById('manualTrigger');
+
+  function showError(msg) {
+    errorMsg.textContent = msg;
+    errorMsg.classList.add('show');
+  }
+  function clearError() {
+    errorMsg.classList.remove('show');
+    errorMsg.textContent = '';
+  }
+
+  function setStatus(kind, text) {
+    statusDot.className = 'status-dot' + (kind ? ' ' + kind : '');
+    statusText.textContent = text;
+  }
+
+  // ---- Construction du menu de niveaux ----
+  function buildLevelMenu() {
+    document.querySelectorAll('#levelSelect .level-group').forEach(groupEl => {
+      const groupName = groupEl.dataset.group;
+      const grid = groupEl.querySelector('.level-grid');
+      const items = LEVELS.filter(l => l.group === groupName);
+      grid.innerHTML = items.map(l => `
+        <button type="button" class="level-btn" data-id="${l.id}">
+          <span class="level-btn-name">${l.name}</span>
+          <span class="level-btn-sub">${l.file.replace('data/','')}</span>
+        </button>
+      `).join('');
+    });
+    document.querySelectorAll('.level-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const level = LEVELS.find(l => l.id === btn.dataset.id);
+        if (level) loadLevel(level, btn);
+      });
+    });
+  }
+  buildLevelMenu();
+
+  function setActiveButton(id) {
+    document.querySelectorAll('.level-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.id === id);
+    });
+  }
+
+  // ---- Chargement automatique depuis le dépôt ----
+  function loadLevel(level, btnEl) {
+    clearError();
+    activeLevelId = level.id;
+    setActiveButton(level.id);
+    document.querySelectorAll('.level-btn').forEach(b => b.classList.add('loading'));
+    setStatus('loading', `Chargement de « ${level.name} »…`);
+    dropzone.classList.remove('show');
+    filePill.style.display = 'none';
+
+    fetch(level.file)
+      .then(res => {
+        if (!res.ok) throw new Error(`fichier introuvable (${res.status}) — vérifiez que "${level.file}" existe bien dans le dépôt`);
+        return res.arrayBuffer();
+      })
+      .then(buf => {
+        const wb = XLSX.read(new Uint8Array(buf), { type: 'array' });
+        const parsed = extractStudents(wb);
+        if (!parsed.students.length) {
+          throw new Error("aucun étudiant détecté dans ce fichier (structure inattendue)");
+        }
+        students = parsed.students;
+        sheetTitle = parsed.sheetTitle;
+        setStatus('ok', `${level.name} — ${parsed.students.length} étudiant(s) chargé(s) depuis ${level.file}`);
+        controls.classList.add('show');
+        render();
+      })
+      .catch(err => {
+        setStatus('err', `Impossible de charger « ${level.name} »`);
+        showError(`Erreur de chargement : ${err.message}.`);
+        results.classList.remove('show');
+        controls.classList.remove('show');
+      })
+      .finally(() => {
+        document.querySelectorAll('.level-btn').forEach(b => b.classList.remove('loading'));
+      });
+  }
+
+  manualTrigger.addEventListener('click', () => {
+    dropzone.classList.toggle('show');
+  });
+
+  dropzone.addEventListener('click', () => fileInput.click());
+  dropzone.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fileInput.click(); }
+  });
+  ['dragenter','dragover'].forEach(ev => dropzone.addEventListener(ev, (e) => {
+    e.preventDefault(); dropzone.classList.add('drag');
+  }));
+  ['dragleave','drop'].forEach(ev => dropzone.addEventListener(ev, (e) => {
+    e.preventDefault(); dropzone.classList.remove('drag');
+  }));
+  dropzone.addEventListener('drop', (e) => {
+    const f = e.dataTransfer.files[0];
+    if (f) handleFile(f);
+  });
+  fileInput.addEventListener('change', (e) => {
+    const f = e.target.files[0];
+    if (f) handleFile(f);
+  });
+  clearFile.addEventListener('click', (e) => {
+    e.stopPropagation();
+    resetAll();
+  });
+
+  function resetAll() {
+    students = [];
+    fileInput.value = '';
+    filePill.style.display = 'none';
+    controls.classList.remove('show');
+    results.classList.remove('show');
+    stampMark.classList.remove('show');
+    setActiveButton(null);
+    setStatus('', 'Sélectionnez un niveau ci-dessus');
+    clearError();
+  }
+
+  function handleFile(file) {
+    clearError();
+    const okExt = /\.(xlsx|xls)$/i.test(file.name);
+    if (!okExt) { showError('Format non reconnu. Merci de déposer un fichier .xlsx ou .xls.'); return; }
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      try {
+        const data = new Uint8Array(e.target.result);
+        const wb = XLSX.read(data, { type: 'array' });
+        const parsed = extractStudents(wb);
+        if (!parsed.students.length) {
+          showError("Aucun étudiant détecté. Vérifiez que le fichier contient bien une colonne « MG » (moyenne générale) et des lignes numérotées avec un nom.");
+          return;
+        }
+        students = parsed.students;
+        sheetTitle = parsed.sheetTitle;
+        fileName.textContent = file.name;
+        filePill.style.display = 'flex';
+        stampMark.classList.remove('show');
+        requestAnimationFrame(() => requestAnimationFrame(() => stampMark.classList.add('show')));
+        setActiveButton(null);
+        setStatus('ok', `${file.name} — ${parsed.students.length} étudiant(s) chargé(s) manuellement`);
+        controls.classList.add('show');
+        render();
+      } catch (err) {
+        showError("Impossible de lire ce fichier : " + err.message);
+      }
+    };
+    reader.onerror = () => showError("Erreur de lecture du fichier.");
+    reader.readAsArrayBuffer(file);
+  }
+
+
+  function norm(s) {
+    if (s === null || s === undefined) return "";
+    return String(s).trim().toLowerCase().replace(/\s+/g, ' ');
+  }
+  function toFloat(v) {
+    if (v === null || v === undefined || v === "") return null;
+    if (typeof v === 'number') return v;
+    const s = String(v).trim().replace(',', '.');
+    if (s === '' || s === '-') return null;
+    const f = parseFloat(s);
+    return isNaN(f) ? null : f;
+  }
+
+  // ---- Détection des colonnes + extraction (port du script Python) ----
+  function extractStudents(workbook) {
+    const sheetName = workbook.SheetNames[0];
+    const ws = workbook.Sheets[sheetName];
+    const grid = XLSX.utils.sheet_to_json(ws, { header: 1, raw: true, defval: null });
+
+    let mgCol = null, headerRow = null;
+    let moyenneCols = [];
+    let numColHdr = null, nomColHdr = null, matColHdr = null;
+
+    const maxScanHeader = Math.min(grid.length, 40);
+    for (let r = 0; r < maxScanHeader; r++) {
+      const row = grid[r] || [];
+      let rowHasMg = false;
+      let localMoy = [];
+      let lNum = null, lNom = null, lMat = null;
+      for (let c = 0; c < row.length; c++) {
+        const val = norm(row[c]);
+        if (!val) continue;
+        if (val === 'mg') { mgCol = c; rowHasMg = true; }
+        else if (val.startsWith('moyenne du') || val.startsWith('moyenne s') || val.startsWith('moy s')) localMoy.push(c);
+        else if (val === 'num' || val === 'n°' || val === 'n0' || val === 'ordre') lNum = c;
+        else if (val.includes('nom') && (val.includes('prénom') || val.includes('prenom'))) lNom = c;
+        else if (val === 'nom') lNom = c;
+        else if (val === 'matricule') lMat = c;
+      }
+      if (rowHasMg) {
+        headerRow = r;
+        moyenneCols = [...new Set(localMoy)].sort((a,b)=>a-b);
+        if (lNum !== null) numColHdr = lNum;
+        if (lNom !== null) nomColHdr = lNom;
+        if (lMat !== null) matColHdr = lMat;
+        break;
+      }
+    }
+
+    if (mgCol === null) {
+      throw new Error("colonne « MG » introuvable dans la feuille");
+    }
+
+    const s1Col = moyenneCols.length >= 1 ? moyenneCols[0] : null;
+    const s2Col = moyenneCols.length >= 2 ? moyenneCols[1] : null;
+
+    let numCol = numColHdr, nomCol = nomColHdr, matCol = matColHdr;
+    if (numCol === null || nomCol === null) {
+      const found = findDataColumns(grid, mgCol);
+      numCol = found.numCol; nomCol = found.nomCol; matCol = found.matCol;
+    }
+    if (numCol === null || nomCol === null) {
+      throw new Error("colonnes Num/Nom introuvables automatiquement");
+    }
+
+    const out = [];
+    for (let r = 0; r < grid.length; r++) {
+      const row = grid[r] || [];
+      const numVal = row[numCol];
+      const nomVal = row[nomCol];
+      if (numVal === null || numVal === undefined) continue;
+      if (nomVal === null || nomVal === undefined) continue;
+      const numStr = String(numVal).trim().replace(/\.0$/, '');
+      if (!/^\d+$/.test(numStr)) continue;
+      if (typeof nomVal !== 'string' || !/[A-Za-zÀ-ÿ]/.test(nomVal)) continue;
+
+      const mg = toFloat(row[mgCol]);
+      if (mg === null) continue;
+      const s1 = s1Col !== null ? toFloat(row[s1Col]) : null;
+      const s2 = s2Col !== null ? toFloat(row[s2Col]) : null;
+      const matricule = matCol !== null ? row[matCol] : null;
+
+      out.push({
+        num: numStr,
+        nom: String(nomVal).trim(),
+        matricule: matricule ? String(matricule).trim() : '',
+        s1: s1, s2: s2, mg: mg
+      });
+    }
+
+    return { students: out, sheetTitle: sheetName };
+  }
+
+  function findDataColumns(grid, mgCol) {
+    const candidates = [];
+    const maxScan = Math.min(grid.length, 400);
+    for (let r = 0; r < maxScan; r++) {
+      const row = (grid[r] || []).slice(0, mgCol + 1);
+      const nonEmpty = [];
+      row.forEach((v, c) => { if (v !== null && v !== undefined && v !== '') nonEmpty.push([c, v]); });
+      if (nonEmpty.length < 3) continue;
+      for (let i = 0; i < nonEmpty.length - 2; i++) {
+        const [cNum, vNum] = nonEmpty[i];
+        const [cNom, vNom] = nonEmpty[i + 1];
+        const isNum = /^\d+(\.0)?$/.test(String(vNum).trim());
+        const isNom = typeof vNom === 'string' && /[A-Za-zÀ-ÿ]/.test(vNom);
+        if (isNum && isNom) {
+          for (let j = i + 2; j < nonEmpty.length; j++) {
+            const [cMat, vMat] = nonEmpty[j];
+            const s = String(vMat).trim().replace(/\.0$/, '');
+            if (/^\d+$/.test(s) && s.length >= 8) {
+              candidates.push(cNum + ',' + cNom + ',' + cMat);
+              break;
+            }
+          }
+          break;
+        }
+      }
+    }
+    if (!candidates.length) return { numCol: null, nomCol: null, matCol: null };
+    const counts = {};
+    candidates.forEach(c => counts[c] = (counts[c] || 0) + 1);
+    const best = Object.keys(counts).sort((a,b) => counts[b]-counts[a])[0];
+    const [numCol, nomCol, matCol] = best.split(',').map(Number);
+    return { numCol, nomCol, matCol };
+  }
+
+  // ---- Stats + rendu ----
+  function getParams() {
+    return {
+      seuil: parseFloat(document.getElementById('seuil').value) || 10,
+      t1: [parseFloat(document.getElementById('t1lo').value), parseFloat(document.getElementById('t1hi').value)],
+      t2: [parseFloat(document.getElementById('t2lo').value), parseFloat(document.getElementById('t2hi').value)],
+    };
+  }
+  function inRange(v, lo, hi, inclHi) {
+    return inclHi ? (v >= lo && v <= hi) : (v >= lo && v < hi);
+  }
+
+  function statusFor(s, p) {
+    if (s.mg === 0) return 'zero';
+    if (s.mg >= p.seuil) return 'admis';
+    if (inRange(s.mg, p.t2[0], p.t2[1], true)) return 't2';
+    if (inRange(s.mg, p.t1[0], p.t1[1], false)) return 't1';
+    return 'ajourne';
+  }
+  function statusLabel(st) {
+    return { admis:'Admis', t2:'Ajourné · critique +', t1:'Ajourné · critique', zero:'Nul', ajourne:'Ajourné' }[st];
+  }
+
+  document.getElementById('recalc').addEventListener('click', render);
+  ['seuil','t1lo','t1hi','t2lo','t2hi'].forEach(id => {
+    document.getElementById(id).addEventListener('keydown', e => { if (e.key === 'Enter') render(); });
+  });
+
+  function render() {
+    if (!students.length) return;
+    const p = getParams();
+    const n = students.length;
+    const mgs = students.map(s => s.mg);
+    const mean = mgs.reduce((a,b) => a+b, 0) / n;
+    const sorted = [...mgs].sort((a,b)=>a-b);
+    const median = n % 2 ? sorted[(n-1)/2] : (sorted[n/2-1] + sorted[n/2]) / 2;
+    const variance = mgs.reduce((a,b) => a + Math.pow(b-mean,2), 0) / n;
+    const std = Math.sqrt(variance);
+    const admis = students.filter(s => s.mg >= p.seuil);
+    const zeros = students.filter(s => s.mg === 0);
+    const t1 = students.filter(s => inRange(s.mg, p.t1[0], p.t1[1], false));
+    const t2 = students.filter(s => inRange(s.mg, p.t2[0], p.t2[1], true));
+    const tauxReussite = (admis.length / n) * 100;
+
+    // stat cards
+    const statRow = document.getElementById('statRow');
+    statRow.innerHTML = `
+      <div class="stat-card"><div class="label">Effectif</div><div class="value">${n}</div></div>
+      <div class="stat-card"><div class="label">Moyenne promo</div><div class="value">${mean.toFixed(2)}<sup>/20</sup></div></div>
+      <div class="stat-card"><div class="label">Médiane</div><div class="value">${median.toFixed(2)}</div></div>
+      <div class="stat-card"><div class="label">Écart-type</div><div class="value">${std.toFixed(2)}</div></div>
+      <div class="stat-card accent"><div class="label">Admis</div><div class="value">${admis.length} <sup>${tauxReussite.toFixed(1)}%</sup></div></div>
+      <div class="stat-card fail"><div class="label">Ajournés</div><div class="value">${n-admis.length} <sup>${(100-tauxReussite).toFixed(1)}%</sup></div></div>
+    `;
+
+    // tranche summary
+    const totalCrit = t1.length + t2.length;
+    const pctCrit = n ? (totalCrit/n*100) : 0;
+    const hyp = n ? ((admis.length+totalCrit)/n*100) : 0;
+    document.getElementById('trancheCount').textContent = `${totalCrit} sur ${n} (${pctCrit.toFixed(1)}%)`;
+    document.getElementById('trancheSummary').innerHTML = `
+      <div class="tranche-card t1">
+        <div class="tc-range">[${p.t1[0].toFixed(2)} – ${p.t1[1].toFixed(2)})</div>
+        <div class="tc-count">${t1.length} <span>étudiant(s)</span></div>
+      </div>
+      <div class="tranche-card t2">
+        <div class="tc-range">[${p.t2[0].toFixed(2)} – ${p.t2[1].toFixed(2)}]</div>
+        <div class="tc-count">${t2.length} <span>étudiant(s)</span></div>
+      </div>
+    `;
+    let critNote = `Si ces ${totalCrit} étudiant(s) étaient admis, le taux de réussite passerait à ${hyp.toFixed(1)}%.`;
+    document.querySelector('#results .block:nth-of-type(1) .block-note').textContent = critNote;
+
+    // zero block
+    const zeroBlock = document.getElementById('zeroBlock');
+    document.getElementById('zeroCount').textContent = zeros.length;
+    if (zeros.length) {
+      zeroBlock.style.display = '';
+      document.getElementById('zeroList').innerHTML = zeros.map(s => `<span class="zchip">${escapeHtml(s.nom)}</span>`).join('');
+    } else {
+      zeroBlock.style.display = 'none';
+    }
+
+    document.getElementById('fullCount').textContent = `${n} étudiant(s)`;
+
+    renderTable(p);
+    results.classList.add('show');
+  }
+
+  function escapeHtml(s) {
+    const d = document.createElement('div');
+    d.textContent = s;
+    return d.innerHTML;
+  }
+
+  function renderTable(p) {
+    const tbody = document.getElementById('fullTbody');
+    const rows = [...students];
+    rows.sort((a,b) => {
+      const k = sortState.key;
+      let va = a[k], vb = b[k];
+      if (k === 'statut') { va = statusFor(a,p); vb = statusFor(b,p); }
+      if (typeof va === 'string') va = va.toLowerCase();
+      if (typeof vb === 'string') vb = vb.toLowerCase();
+      if (va === null || va === undefined) va = -Infinity;
+      if (vb === null || vb === undefined) vb = -Infinity;
+      if (va < vb) return -1 * sortState.dir;
+      if (va > vb) return 1 * sortState.dir;
+      return 0;
+    });
+
+    tbody.innerHTML = rows.map(s => {
+      const st = statusFor(s, p);
+      const rowClass = st === 'admis' ? 'row-admis' : st === 't1' ? 'row-t1' : st === 't2' ? 'row-t2' : st === 'zero' ? 'row-zero' : '';
+      return `<tr class="${rowClass}">
+        <td class="num">${escapeHtml(s.num)}</td>
+        <td class="name">${escapeHtml(s.nom)}</td>
+        <td>${escapeHtml(s.matricule)}</td>
+        <td class="num">${s.s1 !== null ? s.s1.toFixed(2) : '—'}</td>
+        <td class="num">${s.s2 !== null ? s.s2.toFixed(2) : '—'}</td>
+        <td class="mg">${s.mg.toFixed(2)}</td>
+        <td><span class="status-pill">${statusLabel(st)}</span></td>
+      </tr>`;
+    }).join('');
+  }
+
+  document.querySelectorAll('#fullTable thead th').forEach(th => {
+    th.addEventListener('click', () => {
+      const key = th.dataset.key;
+      if (sortState.key === key) sortState.dir *= -1;
+      else { sortState.key = key; sortState.dir = key === 'mg' ? -1 : 1; }
+      renderTable(getParams());
+    });
+  });
+
+  document.getElementById('exportCsv').addEventListener('click', () => {
+    const p = getParams();
+    const header = ['N°','Nom et prénom','Matricule','Moy. S1','Moy. S2','MG','Statut'];
+    const lines = [header.join(';')];
+    [...students].sort((a,b)=>b.mg-a.mg).forEach(s => {
+      const st = statusLabel(statusFor(s,p));
+      lines.push([s.num, s.nom, s.matricule, s.s1??'', s.s2??'', s.mg, st].join(';'));
+    });
+    const blob = new Blob(["\uFEFF" + lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'analyse_resultats.csv';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  });
+
+  document.getElementById('printBtn').addEventListener('click', () => window.print());
+
+})();
+</script>
+</body>
+</html>
