@@ -512,18 +512,16 @@
   /* tranches highlight cards */
   .tranche-summary {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr;
     gap: 16px;
     margin-bottom: 8px;
   }
-  @media (max-width: 640px) { .tranche-summary { grid-template-columns: 1fr; } }
   .tranche-card {
     border-radius: var(--radius);
     padding: 16px 18px;
     border: 1px solid;
   }
   .tranche-card.t1 { background: var(--warn-soft); border-color: #E3C397; }
-  .tranche-card.t2 { background: #FCE9C9; border-color: #E0A95C; }
   .tranche-card .tc-range {
     font-family: var(--mono);
     font-size: 12px;
@@ -585,7 +583,6 @@
 
   tr.row-admis { background: var(--accent-soft); }
   tr.row-t1 { background: var(--warn-soft); }
-  tr.row-t2 { background: #FCE9C9; }
   tr.row-zero { background: var(--fail-soft); color: var(--fail); }
   tr.row-zero td.name { color: var(--fail); }
 
@@ -599,11 +596,77 @@
   }
   .row-admis .status-pill { background: var(--accent); color: #fff; }
   .row-t1 .status-pill { background: var(--warn); color: #fff; }
-  .row-t2 .status-pill { background: var(--warn-strong); color: #fff; }
   .row-zero .status-pill { background: var(--fail); color: #fff; }
-  tr:not(.row-admis):not(.row-t1):not(.row-t2):not(.row-zero) .status-pill {
+  tr:not(.row-admis):not(.row-t1):not(.row-zero) .status-pill {
     background: var(--line-soft); color: var(--ink-soft);
   }
+
+  /* Décision ADD dans la tranche critique */
+  tr.row-t1.row-add {
+    background: #FDE8D8;
+    outline: 2px solid #C87941;
+    outline-offset: -2px;
+  }
+  .add-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    border-radius: 100px;
+    font-size: 11px;
+    font-family: var(--mono);
+    font-weight: 700;
+    background: #C87941;
+    color: #fff;
+    vertical-align: middle;
+    margin-left: 6px;
+  }
+  .add-pill .dette-count { display: none; }
+  .decision-adn { color: var(--accent); font-weight: 600; }
+  .decision-adr { color: #6B45A1; font-weight: 600; }
+  .decision-add { color: #C87941; font-weight: 700; }
+  .decision-ajr { color: var(--fail); font-weight: 600; }
+
+  /* Bloc ADD en haut des résultats */
+  .add-block {
+    background: #FEF0E6;
+    border: 1.5px solid #E0A060;
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    margin-top: 28px;
+  }
+  .add-block-title {
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: 16px;
+    margin: 0 0 12px;
+    color: #7A3D10;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .add-block-title .add-pill { margin-left: 0; }
+  .add-student-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid #E9C49A;
+    font-size: 13.5px;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .add-student-row:last-child { border-bottom: none; }
+  .add-student-name { font-weight: 600; }
+  .add-student-meta {
+    display: flex;
+    gap: 14px;
+    font-family: var(--mono);
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    flex-wrap: wrap;
+  }
+  .add-student-meta .mg-val { color: #C87941; font-weight: 700; }
 
   .module-rate-cell {
     display: flex;
@@ -627,63 +690,6 @@
   .module-rate-fill.low { background: var(--fail); }
   .module-rate-fill.mid { background: var(--warn); }
   td.module-name { font-weight: 500; white-space: normal; min-width: 160px; }
-
-  /* module toolbar */
-  .module-toolbar {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: flex-end;
-    gap: 18px;
-    margin-bottom: 16px;
-    padding: 14px 16px;
-    background: var(--paper-raised);
-    border: 1px solid var(--line-soft);
-    border-radius: var(--radius);
-  }
-  .module-toolbar .field { gap: 6px; }
-  .module-toolbar input[type="text"],
-  .module-toolbar select {
-    padding: 7px 9px;
-    border: 1px solid var(--line);
-    border-radius: var(--radius);
-    font-family: var(--mono);
-    font-size: 13px;
-    background: var(--paper);
-    color: var(--ink);
-  }
-  .module-toolbar input[type="text"] { width: 180px; }
-  .module-toolbar input[type="number"] {
-    width: 64px;
-    padding: 7px 8px;
-    border: 1px solid var(--line);
-    border-radius: var(--radius);
-    font-family: var(--mono);
-    font-size: 13px;
-    background: var(--paper);
-    color: var(--ink);
-  }
-  .module-toolbar .spacer { flex: 1; }
-
-  tr.module-critical td { background: var(--fail-soft); }
-  tr.module-critical td.module-name { color: var(--fail); }
-
-  .module-spark {
-    display: flex;
-    align-items: flex-end;
-    gap: 2px;
-    height: 26px;
-    width: 84px;
-    margin-left: auto;
-  }
-  .module-spark-bar {
-    flex: 1;
-    background: var(--accent-soft);
-    border-radius: 1px;
-    min-height: 1px;
-  }
-  .module-spark-bar.below { background: var(--fail-soft); border: 1px solid var(--fail); border-bottom: none; }
-  .module-spark-bar.above { background: var(--accent-soft); border: 1px solid var(--accent); border-bottom: none; }
-  td.module-spark-cell { min-width: 94px; }
 
   .legend {
     display: flex;
@@ -828,19 +834,11 @@
       <input type="number" id="seuil" value="10" step="0.5" min="0" max="20">
     </div>
     <div class="field">
-      <label><span class="swatch" style="background:#E0A95C"></span>Tranche critique 1</label>
+      <label><span class="swatch" style="background:#E0A95C"></span>Tranche critique</label>
       <div class="range-inputs">
         <input type="number" id="t1lo" value="8.5" step="0.1">
         <span class="dash">–</span>
-        <input type="number" id="t1hi" value="9.0" step="0.1">
-      </div>
-    </div>
-    <div class="field">
-      <label><span class="swatch" style="background:#C98425"></span>Tranche critique 2</label>
-      <div class="range-inputs">
-        <input type="number" id="t2lo" value="9.0" step="0.1">
-        <span class="dash">–</span>
-        <input type="number" id="t2hi" value="9.99" step="0.1">
+        <input type="number" id="t1hi" value="9.99" step="0.1">
       </div>
     </div>
     <button class="btn primary" id="recalc">Recalculer</button>
@@ -850,12 +848,21 @@
 
     <div class="stat-row" id="statRow"></div>
 
+    <div class="add-block" id="addBlock" style="display:none">
+      <div class="add-block-title">
+        <span class="add-pill">ADD</span>
+        Admis avec dette — passent en année supérieure
+        <span style="font-family:var(--mono);font-size:13px;color:#7A3D10;margin-left:auto" id="addPillCount"></span>
+      </div>
+      <div id="addList"></div>
+    </div>
+
     <section class="block">
       <div class="block-head">
         <h2>Étudiants proches du seuil</h2>
         <span class="count" id="trancheCount"></span>
       </div>
-      <p class="block-note">Les deux tranches définies ci-dessus, classées par moyenne générale décroissante.</p>
+      <p class="block-note">Étudiants dans la tranche critique définie ci-dessus, classés par moyenne générale décroissante.</p>
       <div class="tranche-summary" id="trancheSummary"></div>
     </section>
 
@@ -873,42 +880,18 @@
         <h2>Statistiques par module</h2>
         <span class="count" id="moduleCount"></span>
       </div>
-      <p class="block-note">Moyenne, médiane, distribution et taux de réussite (note ≥ 10) de chaque matière, triables par colonne. Les libellés peuvent être tronqués dans le fichier source.</p>
-
-      <div class="module-toolbar">
-        <div class="field">
-          <label for="moduleSearch">Recherche</label>
-          <input type="text" id="moduleSearch" placeholder="Nom du module…">
-        </div>
-        <div class="field">
-          <label for="moduleSemFilter">Semestre</label>
-          <select id="moduleSemFilter">
-            <option value="all">Tous</option>
-            <option value="1">S1</option>
-            <option value="2">S2</option>
-          </select>
-        </div>
-        <div class="field">
-          <label for="moduleCritThreshold">Seuil critique (taux réussite &lt;)</label>
-          <input type="number" id="moduleCritThreshold" value="50" step="5" min="0" max="100">
-        </div>
-        <div class="spacer"></div>
-        <button class="btn" id="exportModuleCsv">Exporter en CSV</button>
-      </div>
-
+      <p class="block-note">Moyenne, médiane et taux de réussite (note ≥ 10) de chaque matière, triables par colonne. Les libellés peuvent être tronqués dans le fichier source.</p>
       <div class="table-scroll">
         <table id="moduleTable">
           <thead>
             <tr>
               <th data-mkey="label">Module <span class="arrow">↕</span></th>
               <th data-mkey="semestre" class="num">Sem. <span class="arrow">↕</span></th>
-              <th data-mkey="n" class="num">Effectif noté <span class="arrow">↕</span></th>
-              <th data-mkey="absent" class="num">Non noté <span class="arrow">↕</span></th>
+              <th data-mkey="n" class="num">Effectif <span class="arrow">↕</span></th>
               <th data-mkey="moyenne" class="num">Moyenne <span class="arrow">↕</span></th>
               <th data-mkey="mediane" class="num">Médiane <span class="arrow">↕</span></th>
               <th data-mkey="min" class="num">Min <span class="arrow">↕</span></th>
               <th data-mkey="max" class="num">Max <span class="arrow">↕</span></th>
-              <th class="num">Distribution</th>
               <th data-mkey="taux" class="num">Réussite (≥10) <span class="arrow">↕</span></th>
             </tr>
           </thead>
@@ -930,6 +913,7 @@
               <th data-key="num" class="num">N° <span class="arrow">↕</span></th>
               <th data-key="nom">Nom et prénom <span class="arrow">↕</span></th>
               <th data-key="matricule">Matricule <span class="arrow">↕</span></th>
+              <th data-key="decision">Décision <span class="arrow">↕</span></th>
               <th data-key="s1" class="num">Moy. S1 <span class="arrow">↕</span></th>
               <th data-key="s2" class="num">Moy. S2 <span class="arrow">↕</span></th>
               <th data-key="mg" class="num">MG <span class="arrow">↕</span></th>
@@ -941,8 +925,8 @@
       </div>
       <div class="legend">
         <span><span class="swatch" style="background:#0B5D52"></span>Admis</span>
-        <span><span class="swatch" style="background:#C98425"></span>Critique (proche +)</span>
         <span><span class="swatch" style="background:#E0A95C"></span>Critique</span>
+        <span><span class="swatch" style="background:#C87941;outline:2px solid #C87941;outline-offset:1px"></span>Critique + ADD</span>
         <span><span class="swatch" style="background:#9B3B3B"></span>Note nulle</span>
       </div>
     </section>
@@ -1010,31 +994,32 @@
   let sortState = { key: "mg", dir: -1 };
   let activeLevelId = null;
   let moduleCols = [];
+  let hasDecision = false;
 
   // Chemins relatifs au fichier index.html : data/<fichier>.xlsx
   // (à servir depuis GitHub Pages ou un dossier local avec un serveur HTTP)
   const LEVELS = [
-    { group: "Ingénieur", id: "1ing", name: "1ère ING", file: "data/1ere ING.xlsx" },
-    { group: "Ingénieur", id: "2ing", name: "2ème ING", file: "data/2eme ING.xlsx" },
-    { group: "Ingénieur", id: "3ing", name: "3ème ING", file: "data/3eme ING.xlsx" },
+    { group: "Ingénieur", id: "1ing", name: "1ère ING", file: "data/1ere-ING.xlsx" },
+    { group: "Ingénieur", id: "2ing", name: "2ème ING", file: "data/2eme-ING.xlsx" },
+    { group: "Ingénieur", id: "3ing", name: "3ème ING", file: "data/3eme-ING.xlsx" },
 
-    { group: "Licence — Électrotechnique / Automobile", id: "l1elmaut", name: "L1 ELM Automobile", file: "data/L1 ELM Automobile.xlsx" },
-    { group: "Licence — Électrotechnique / Automobile", id: "l2aut", name: "L2 Aut", file: "data/L2 Aut.xlsx" },
-    { group: "Licence — Électrotechnique / Automobile", id: "l2elmaut", name: "L2 ELM Automobile", file: "data/L2 ELM Automobile.xlsx" },
-    { group: "Licence — Électrotechnique / Automobile", id: "l2elm", name: "L2 ELM", file: "data/L2 ELM.xlsx" },
-    { group: "Licence — Électrotechnique / Automobile", id: "l2elt", name: "L2 ELT", file: "data/L2 ELT.xlsx" },
-    { group: "Licence — Électrotechnique / Automobile", id: "l3aut", name: "L3 Aut", file: "data/L3 Aut.xlsx" },
-    { group: "Licence — Électrotechnique / Automobile", id: "l3elm", name: "L3 ELM", file: "data/L3 ELM.xlsx" },
-    { group: "Licence — Électrotechnique / Automobile", id: "l3elt", name: "L3 ELT", file: "data/L3 ELT.xlsx" },
+    { group: "Licence — Électrotechnique / Automobile", id: "l1elmaut", name: "L1 ELM Automobile", file: "data/L1-ELM-Automobile.xlsx" },
+    { group: "Licence — Électrotechnique / Automobile", id: "l2aut", name: "L2 Aut", file: "data/L2-Aut.xlsx" },
+    { group: "Licence — Électrotechnique / Automobile", id: "l2elmaut", name: "L2 ELM Automobile", file: "data/L2-ELM-Automobile.xlsx" },
+    { group: "Licence — Électrotechnique / Automobile", id: "l2elm", name: "L2 ELM", file: "data/L2-ELM.xlsx" },
+    { group: "Licence — Électrotechnique / Automobile", id: "l2elt", name: "L2 ELT", file: "data/L2-ELT.xlsx" },
+    { group: "Licence — Électrotechnique / Automobile", id: "l3aut", name: "L3 Aut", file: "data/L3-Aut.xlsx" },
+    { group: "Licence — Électrotechnique / Automobile", id: "l3elm", name: "L3 ELM", file: "data/L3-ELM.xlsx" },
+    { group: "Licence — Électrotechnique / Automobile", id: "l3elt", name: "L3 ELT", file: "data/L3-ELT.xlsx" },
 
-    { group: "Master", id: "m1aut", name: "M1 Aut", file: "data/M1 Aut.xlsx" },
-    { group: "Master", id: "m1cmd", name: "M1 CMD", file: "data/M1 CMD.xlsx" },
-    { group: "Master", id: "m1elm", name: "M1 ELM", file: "data/M1 ELM.xlsx" },
-    { group: "Master", id: "m1er", name: "M1 ER", file: "data/M1 ER.xlsx" },
-    { group: "Master", id: "m2aut", name: "M2 Aut", file: "data/M2 Aut.xlsx" },
-    { group: "Master", id: "m2cmd", name: "M2 CMD", file: "data/M2 CMD.xlsx" },
-    { group: "Master", id: "m2elm", name: "M2 ELM", file: "data/M2 ELM.xlsx" },
-    { group: "Master", id: "m2er", name: "M2 ER", file: "data/M2 ER.xlsx" },
+    { group: "Master", id: "m1aut", name: "M1 Aut", file: "data/M1-Aut.xlsx" },
+    { group: "Master", id: "m1cmd", name: "M1 CMD", file: "data/M1-CMD.xlsx" },
+    { group: "Master", id: "m1elm", name: "M1 ELM", file: "data/M1-ELM.xlsx" },
+    { group: "Master", id: "m1er", name: "M1 ER", file: "data/M1-ER.xlsx" },
+    { group: "Master", id: "m2aut", name: "M2 Aut", file: "data/M2-Aut.xlsx" },
+    { group: "Master", id: "m2cmd", name: "M2 CMD", file: "data/M2-CMD.xlsx" },
+    { group: "Master", id: "m2elm", name: "M2 ELM", file: "data/M2-ELM.xlsx" },
+    { group: "Master", id: "m2er", name: "M2 ER", file: "data/M2-ER.xlsx" },
   ];
 
   const dropzone = document.getElementById('dropzone');
@@ -1116,6 +1101,7 @@
         students = parsed.students;
         sheetTitle = parsed.sheetTitle;
         moduleCols = parsed.moduleCols;
+        hasDecision = parsed.hasDecision;
         setStatus('ok', `${level.name} — ${parsed.students.length} étudiant(s) chargé(s) depuis ${level.file}`);
         controls.classList.add('show');
         render();
@@ -1188,6 +1174,7 @@
         students = parsed.students;
         sheetTitle = parsed.sheetTitle;
         moduleCols = parsed.moduleCols;
+        hasDecision = parsed.hasDecision;
         fileName.textContent = file.name;
         filePill.style.display = 'flex';
         stampMark.classList.remove('show');
@@ -1282,8 +1269,28 @@
       throw new Error("colonnes Num/Nom introuvables automatiquement");
     }
 
+    // Détecter la colonne décision (ADR/ADD/AJR/ADN) automatiquement :
+    // on cherche la colonne dont les valeurs non-nulles sont exclusivement
+    // des codes de décision, dans les colonnes proches de Matricule
+    const DECISIONS = new Set(['adr','add','ajr','adn']);
+    let decisionCol = null;
+    const searchStart = (matCol !== null ? matCol : nomCol) + 1;
+    const searchEnd = Math.min(searchStart + 15, mgCol);
+    for (let c = searchStart; c < searchEnd; c++) {
+      const colVals = [];
+      for (let r = 0; r < grid.length; r++) {
+        const v = grid[r] ? grid[r][c] : null;
+        if (v !== null && v !== undefined && String(v).trim() !== '') {
+          colVals.push(String(v).trim().toLowerCase());
+        }
+      }
+      if (colVals.length > 0 && colVals.every(v => DECISIONS.has(v))) {
+        decisionCol = c;
+        break;
+      }
+    }
+
     // semestre de chaque module, déduit de sa position par rapport à s1Col
-    // (la colonne "Moyenne du Semestre 1" marque la frontière S1 / S2)
     moduleCols = moduleCols.map(m => ({
       ...m,
       semestre: (s1Col !== null && m.col > s1Col) ? 2 : 1
@@ -1306,19 +1313,31 @@
       const s2 = s2Col !== null ? toFloat(row[s2Col]) : null;
       const matricule = matCol !== null ? row[matCol] : null;
 
+      const decision = decisionCol !== null && row[decisionCol]
+        ? String(row[decisionCol]).trim().toUpperCase()
+        : null;
+
+      // nombre de modules sous 10 (dette)
       const modules = {};
-      moduleCols.forEach(m => { modules[m.col] = toFloat(row[m.col]); });
+      let nbDette = 0;
+      moduleCols.forEach(m => {
+        const note = toFloat(row[m.col]);
+        modules[m.col] = note;
+        if (note !== null && note < 10) nbDette++;
+      });
 
       out.push({
         num: numStr,
         nom: String(nomVal).trim(),
         matricule: matricule ? String(matricule).trim() : '',
         s1: s1, s2: s2, mg: mg,
+        decision: decision,
+        nbDette: nbDette,
         modules: modules
       });
     }
 
-    return { students: out, sheetTitle: sheetName, moduleCols: moduleCols };
+    return { students: out, sheetTitle: sheetName, moduleCols: moduleCols, hasDecision: decisionCol !== null };
   }
 
   function findDataColumns(grid, mgCol) {
@@ -1360,7 +1379,6 @@
     return {
       seuil: parseFloat(document.getElementById('seuil').value) || 10,
       t1: [parseFloat(document.getElementById('t1lo').value), parseFloat(document.getElementById('t1hi').value)],
-      t2: [parseFloat(document.getElementById('t2lo').value), parseFloat(document.getElementById('t2hi').value)],
     };
   }
   function inRange(v, lo, hi, inclHi) {
@@ -1370,16 +1388,26 @@
   function statusFor(s, p) {
     if (s.mg === 0) return 'zero';
     if (s.mg >= p.seuil) return 'admis';
-    if (inRange(s.mg, p.t2[0], p.t2[1], true)) return 't2';
-    if (inRange(s.mg, p.t1[0], p.t1[1], false)) return 't1';
+    if (s.decision === 'ADD') {
+      if (inRange(s.mg, p.t1[0], p.t1[1], true)) return 'add_t1';
+      return 'add';
+    }
+    if (inRange(s.mg, p.t1[0], p.t1[1], true)) return 't1';
     return 'ajourne';
   }
   function statusLabel(st) {
-    return { admis:'Admis', t2:'Ajourné · critique +', t1:'Ajourné · critique', zero:'Nul', ajourne:'Ajourné' }[st];
+    return {
+      admis: 'Admis',
+      add: 'Dette',
+      add_t1: 'Dette · critique',
+      t1: 'Ajourné · critique',
+      zero: 'Nul',
+      ajourne: 'Ajourné'
+    }[st];
   }
 
   document.getElementById('recalc').addEventListener('click', render);
-  ['seuil','t1lo','t1hi','t2lo','t2hi'].forEach(id => {
+  ['seuil','t1lo','t1hi'].forEach(id => {
     document.getElementById(id).addEventListener('keydown', e => { if (e.key === 'Enter') render(); });
   });
 
@@ -1395,8 +1423,7 @@
     const std = Math.sqrt(variance);
     const admis = students.filter(s => s.mg >= p.seuil);
     const zeros = students.filter(s => s.mg === 0);
-    const t1 = students.filter(s => inRange(s.mg, p.t1[0], p.t1[1], false));
-    const t2 = students.filter(s => inRange(s.mg, p.t2[0], p.t2[1], true));
+    const t1 = students.filter(s => inRange(s.mg, p.t1[0], p.t1[1], true));
     const tauxReussite = (admis.length / n) * 100;
 
     // stat cards
@@ -1411,22 +1438,15 @@
     `;
 
     // tranche summary
-    const totalCrit = t1.length + t2.length;
-    const pctCrit = n ? (totalCrit/n*100) : 0;
-    const hyp = n ? ((admis.length+totalCrit)/n*100) : 0;
-    document.getElementById('trancheCount').textContent = `${totalCrit} sur ${n} (${pctCrit.toFixed(1)}%)`;
+    const pctCrit = n ? (t1.length/n*100) : 0;
+    const hyp = n ? ((admis.length+t1.length)/n*100) : 0;
+    document.getElementById('trancheCount').textContent = `${t1.length} sur ${n} (${pctCrit.toFixed(1)}%)`;
     document.getElementById('trancheSummary').innerHTML = `
       <div class="tranche-card t1">
-        <div class="tc-range">[${p.t1[0].toFixed(2)} – ${p.t1[1].toFixed(2)})</div>
-        <div class="tc-count">${t1.length} <span>étudiant(s)</span></div>
-      </div>
-      <div class="tranche-card t2">
-        <div class="tc-range">[${p.t2[0].toFixed(2)} – ${p.t2[1].toFixed(2)}]</div>
-        <div class="tc-count">${t2.length} <span>étudiant(s)</span></div>
+        <div class="tc-range">[${p.t1[0].toFixed(2)} – ${p.t1[1].toFixed(2)}]</div>
+        <div class="tc-count">${t1.length} <span>étudiant(s) — si admis : ${hyp.toFixed(1)}% de réussite</span></div>
       </div>
     `;
-    let critNote = `Si ces ${totalCrit} étudiant(s) étaient admis, le taux de réussite passerait à ${hyp.toFixed(1)}%.`;
-    document.querySelector('#results .block:nth-of-type(1) .block-note').textContent = critNote;
 
     // zero block
     const zeroBlock = document.getElementById('zeroBlock');
@@ -1436,6 +1456,27 @@
       document.getElementById('zeroList').innerHTML = zeros.map(s => `<span class="zchip">${escapeHtml(s.nom)}</span>`).join('');
     } else {
       zeroBlock.style.display = 'none';
+    }
+
+    // bloc ADD — admis avec dette, priorité maximale
+    const addStudents = students.filter(s => s.decision === 'ADD');
+    const addBlock = document.getElementById('addBlock');
+    if (addStudents.length) {
+      addBlock.style.display = '';
+      document.getElementById('addPillCount').textContent = `${addStudents.length} étudiant(s)`;
+      document.getElementById('addList').innerHTML = addStudents
+        .sort((a,b) => b.nbDette - a.nbDette)
+        .map(s => `
+          <div class="add-student-row">
+            <span class="add-student-name">${escapeHtml(s.nom)}</span>
+            <span class="add-student-meta">
+              <span>S1 <b>${s.s1 !== null ? s.s1.toFixed(2) : '—'}</b></span>
+              <span>S2 <b>${s.s2 !== null ? s.s2.toFixed(2) : '—'}</b></span>
+              <span class="mg-val">MG ${s.mg.toFixed(2)}</span>
+            </span>
+          </div>`).join('');
+    } else {
+      addBlock.style.display = 'none';
     }
 
     document.getElementById('fullCount').textContent = `${n} étudiant(s)`;
@@ -1454,37 +1495,25 @@
   // ---- Statistiques par module ----
   let moduleSortState = { key: 'col_order', dir: 1 };
   let moduleStatsCache = [];
-  let moduleFilterState = { search: '', sem: 'all', critThreshold: 50 };
-  const MODULE_BUCKETS = [
-    { lo: 0,  hi: 8,  label: '0–8' },
-    { lo: 8,  hi: 10, label: '8–10' },
-    { lo: 10, hi: 12, label: '10–12' },
-    { lo: 12, hi: 14, label: '12–14' },
-    { lo: 14, hi: 16, label: '14–16' },
-    { lo: 16, hi: 20.01, label: '16–20' }
-  ];
 
   function computeModuleStats() {
-    const totalStudents = students.length;
     return moduleCols.map(m => {
       const vals = students
         .map(s => s.modules[m.col])
         .filter(v => v !== null && v !== undefined && !isNaN(v));
       const n = vals.length;
-      const absent = totalStudents - n;
       if (!n) {
-        return { col: m.col, label: m.label, semestre: m.semestre, n: 0, absent,
-                 moyenne: null, mediane: null, min: null, max: null, taux: null, distribution: MODULE_BUCKETS.map(()=>0) };
+        return { col: m.col, label: m.label, semestre: m.semestre, n: 0,
+                 moyenne: null, mediane: null, min: null, max: null, taux: null };
       }
       const moyenne = vals.reduce((a,b)=>a+b,0) / n;
       const sorted = [...vals].sort((a,b)=>a-b);
       const mediane = n % 2 ? sorted[(n-1)/2] : (sorted[n/2-1] + sorted[n/2]) / 2;
       const reussite = vals.filter(v => v >= 10).length;
       const taux = (reussite / n) * 100;
-      const distribution = MODULE_BUCKETS.map(b => vals.filter(v => v >= b.lo && v < b.hi).length);
       return {
-        col: m.col, label: m.label, semestre: m.semestre, n, absent,
-        moyenne, mediane, min: Math.min(...vals), max: Math.max(...vals), taux, distribution
+        col: m.col, label: m.label, semestre: m.semestre, n,
+        moyenne, mediane, min: Math.min(...vals), max: Math.max(...vals), taux
       };
     });
   }
@@ -1503,15 +1532,6 @@
     const tbody = document.getElementById('moduleTbody');
     let rows = [...moduleStatsCache];
 
-    // filtres : recherche texte, semestre
-    if (moduleFilterState.search) {
-      const q = moduleFilterState.search.trim().toLowerCase();
-      rows = rows.filter(m => m.label.toLowerCase().includes(q));
-    }
-    if (moduleFilterState.sem !== 'all') {
-      rows = rows.filter(m => String(m.semestre) === moduleFilterState.sem);
-    }
-
     if (moduleSortState.key !== 'col_order') {
       const k = moduleSortState.key;
       rows.sort((a,b) => {
@@ -1526,41 +1546,24 @@
       });
     }
 
-    document.getElementById('moduleCount').textContent = `${rows.length} / ${moduleStatsCache.length} module(s)`;
-
-    if (!rows.length) {
-      tbody.innerHTML = `<tr><td colspan="10" style="text-align:center;color:var(--ink-soft)">Aucun module ne correspond aux filtres.</td></tr>`;
-      return;
-    }
-
     tbody.innerHTML = rows.map(m => {
-      const isCritical = m.taux !== null && m.taux < moduleFilterState.critThreshold;
-      const trClass = isCritical ? ' class="module-critical"' : '';
       if (!m.n) {
-        return `<tr${trClass}>
+        return `<tr>
           <td class="module-name">${escapeHtml(m.label)}</td>
           <td class="num">S${m.semestre}</td>
-          <td class="num" colspan="8" style="text-align:center;color:var(--ink-soft)">aucune donnée (${m.absent} non noté(s))</td>
+          <td class="num" colspan="6" style="text-align:center;color:var(--ink-soft)">aucune donnée</td>
         </tr>`;
       }
       const taux = m.taux;
       const rateClass = taux >= 50 ? '' : (taux >= 30 ? 'mid' : 'low');
-      const maxBucket = Math.max(...m.distribution, 1);
-      const spark = m.distribution.map((c, i) => {
-        const h = Math.max(2, Math.round((c / maxBucket) * 24));
-        const cls = MODULE_BUCKETS[i].hi <= 10 ? 'below' : 'above';
-        return `<span class="module-spark-bar ${cls}" style="height:${h}px" title="${MODULE_BUCKETS[i].label} : ${c}"></span>`;
-      }).join('');
-      return `<tr${trClass}>
+      return `<tr>
         <td class="module-name">${escapeHtml(m.label)}</td>
         <td class="num">S${m.semestre}</td>
         <td class="num">${m.n}</td>
-        <td class="num">${m.absent}</td>
         <td class="num">${m.moyenne.toFixed(2)}</td>
         <td class="num">${m.mediane.toFixed(2)}</td>
         <td class="num">${m.min.toFixed(2)}</td>
         <td class="num">${m.max.toFixed(2)}</td>
-        <td class="num module-spark-cell"><div class="module-spark">${spark}</div></td>
         <td class="num">
           <div class="module-rate-cell">
             <span>${taux.toFixed(1)}%</span>
@@ -1574,50 +1577,10 @@
   document.querySelectorAll('#moduleTable thead th').forEach(th => {
     th.addEventListener('click', () => {
       const key = th.dataset.mkey;
-      if (!key) return;
       if (moduleSortState.key === key) moduleSortState.dir *= -1;
       else { moduleSortState.key = key; moduleSortState.dir = key === 'label' ? 1 : -1; }
       renderModuleTable();
     });
-  });
-
-  document.getElementById('moduleSearch').addEventListener('input', (e) => {
-    moduleFilterState.search = e.target.value;
-    renderModuleTable();
-  });
-  document.getElementById('moduleSemFilter').addEventListener('change', (e) => {
-    moduleFilterState.sem = e.target.value;
-    renderModuleTable();
-  });
-  document.getElementById('moduleCritThreshold').addEventListener('input', (e) => {
-    moduleFilterState.critThreshold = parseFloat(e.target.value) || 0;
-    renderModuleTable();
-  });
-
-  document.getElementById('exportModuleCsv').addEventListener('click', () => {
-    const header = ['Module','Semestre','Effectif noté','Non noté','Moyenne','Médiane','Min','Max',
-      ...MODULE_BUCKETS.map(b => `Effectif ${b.label}`), 'Taux de réussite (%)'];
-    const lines = [header.join(';')];
-    moduleStatsCache.forEach(m => {
-      lines.push([
-        `"${m.label.replace(/"/g,'""')}"`,
-        `S${m.semestre}`,
-        m.n,
-        m.absent,
-        m.moyenne !== null ? m.moyenne.toFixed(2) : '',
-        m.mediane !== null ? m.mediane.toFixed(2) : '',
-        m.min !== null ? m.min.toFixed(2) : '',
-        m.max !== null ? m.max.toFixed(2) : '',
-        ...m.distribution,
-        m.taux !== null ? m.taux.toFixed(1) : ''
-      ].join(';'));
-    });
-    const blob = new Blob(["\uFEFF" + lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = 'statistiques_modules.csv';
-    document.body.appendChild(a); a.click(); document.body.removeChild(a);
-    URL.revokeObjectURL(url);
   });
 
   function renderTable(p) {
@@ -1638,11 +1601,25 @@
 
     tbody.innerHTML = rows.map(s => {
       const st = statusFor(s, p);
-      const rowClass = st === 'admis' ? 'row-admis' : st === 't1' ? 'row-t1' : st === 't2' ? 'row-t2' : st === 'zero' ? 'row-zero' : '';
+      const isAdd = s.decision === 'ADD';
+      const rowClass = {
+        admis: 'row-admis',
+        add: 'row-add',
+        add_t1: 'row-t1 row-add',
+        t1: 'row-t1',
+        zero: 'row-zero',
+        ajourne: ''
+      }[st] || '';
+
+      const decisionHtml = s.decision
+        ? `<span class="decision-${s.decision.toLowerCase()}">${s.decision}</span>`
+        : '—';
+
       return `<tr class="${rowClass}">
         <td class="num">${escapeHtml(s.num)}</td>
         <td class="name">${escapeHtml(s.nom)}</td>
         <td>${escapeHtml(s.matricule)}</td>
+        <td>${decisionHtml}</td>
         <td class="num">${s.s1 !== null ? s.s1.toFixed(2) : '—'}</td>
         <td class="num">${s.s2 !== null ? s.s2.toFixed(2) : '—'}</td>
         <td class="mg">${s.mg.toFixed(2)}</td>
@@ -1662,11 +1639,11 @@
 
   document.getElementById('exportCsv').addEventListener('click', () => {
     const p = getParams();
-    const header = ['N°','Nom et prénom','Matricule','Moy. S1','Moy. S2','MG','Statut'];
+    const header = ['N°','Nom et prénom','Matricule','Décision','Modules < 10','Moy. S1','Moy. S2','MG','Statut'];
     const lines = [header.join(';')];
     [...students].sort((a,b)=>b.mg-a.mg).forEach(s => {
       const st = statusLabel(statusFor(s,p));
-      lines.push([s.num, s.nom, s.matricule, s.s1??'', s.s2??'', s.mg, st].join(';'));
+      lines.push([s.num, s.nom, s.matricule, s.decision??'', s.nbDette, s.s1??'', s.s2??'', s.mg, st].join(';'));
     });
     const blob = new Blob(["\uFEFF" + lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
