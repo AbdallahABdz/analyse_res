@@ -84,7 +84,97 @@
     font-size: 15px;
   }
 
+  /* ---------- Lock screen ---------- */
+  #lockScreen {
+    position: fixed;
+    inset: 0;
+    background: var(--paper);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    padding: 24px;
+  }
+  #lockScreen.hidden { display: none; }
+  .lock-card {
+    background: var(--paper-raised);
+    border: 1px solid var(--line-soft);
+    border-radius: var(--radius);
+    padding: 40px 36px;
+    max-width: 360px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 2px 24px rgba(28,43,51,0.06);
+  }
+  .lock-icon {
+    width: 36px;
+    height: 36px;
+    margin: 0 auto 18px;
+    color: var(--accent);
+  }
+  .lock-card h2 {
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: 21px;
+    margin: 0 0 6px;
+  }
+  .lock-card p {
+    color: var(--ink-soft);
+    font-size: 13.5px;
+    margin: 0 0 22px;
+  }
+  .lock-card input[type="password"] {
+    width: 100%;
+    padding: 11px 13px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    font-family: var(--mono);
+    font-size: 14px;
+    background: var(--paper);
+    color: var(--ink);
+    text-align: center;
+    letter-spacing: 0.05em;
+  }
+  .lock-card input[type="password"]:focus {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+  .lock-card button {
+    width: 100%;
+    margin-top: 12px;
+    padding: 11px;
+    border-radius: var(--radius);
+    border: 1px solid var(--accent);
+    background: var(--accent);
+    color: #fff;
+    font-family: var(--sans);
+    font-weight: 600;
+    font-size: 13.5px;
+    cursor: pointer;
+  }
+  .lock-card button:hover { background: #094A41; }
+  .lock-error {
+    display: none;
+    margin-top: 14px;
+    color: var(--fail);
+    font-size: 13px;
+  }
+  .lock-error.show { display: block; }
+  .lock-remember {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    justify-content: center;
+    margin-top: 16px;
+    font-size: 12.5px;
+    color: var(--ink-soft);
+  }
+
+  #appRoot { display: none; }
+  #appRoot.show { display: block; }
+
   /* ---------- Level selector ---------- */
+
   .level-select {
     display: flex;
     flex-direction: column;
@@ -515,6 +605,86 @@
     background: var(--line-soft); color: var(--ink-soft);
   }
 
+  .module-rate-cell {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    justify-content: flex-end;
+  }
+  .module-rate-bar {
+    width: 60px;
+    height: 6px;
+    background: var(--line-soft);
+    border-radius: 100px;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  .module-rate-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 100px;
+  }
+  .module-rate-fill.low { background: var(--fail); }
+  .module-rate-fill.mid { background: var(--warn); }
+  td.module-name { font-weight: 500; white-space: normal; min-width: 160px; }
+
+  /* module toolbar */
+  .module-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 18px;
+    margin-bottom: 16px;
+    padding: 14px 16px;
+    background: var(--paper-raised);
+    border: 1px solid var(--line-soft);
+    border-radius: var(--radius);
+  }
+  .module-toolbar .field { gap: 6px; }
+  .module-toolbar input[type="text"],
+  .module-toolbar select {
+    padding: 7px 9px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    font-family: var(--mono);
+    font-size: 13px;
+    background: var(--paper);
+    color: var(--ink);
+  }
+  .module-toolbar input[type="text"] { width: 180px; }
+  .module-toolbar input[type="number"] {
+    width: 64px;
+    padding: 7px 8px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    font-family: var(--mono);
+    font-size: 13px;
+    background: var(--paper);
+    color: var(--ink);
+  }
+  .module-toolbar .spacer { flex: 1; }
+
+  tr.module-critical td { background: var(--fail-soft); }
+  tr.module-critical td.module-name { color: var(--fail); }
+
+  .module-spark {
+    display: flex;
+    align-items: flex-end;
+    gap: 2px;
+    height: 26px;
+    width: 84px;
+    margin-left: auto;
+  }
+  .module-spark-bar {
+    flex: 1;
+    background: var(--accent-soft);
+    border-radius: 1px;
+    min-height: 1px;
+  }
+  .module-spark-bar.below { background: var(--fail-soft); border: 1px solid var(--fail); border-bottom: none; }
+  .module-spark-bar.above { background: var(--accent-soft); border: 1px solid var(--accent); border-bottom: none; }
+  td.module-spark-cell { min-width: 94px; }
+
   .legend {
     display: flex;
     gap: 18px;
@@ -581,7 +751,28 @@
 </style>
 </head>
 <body>
-<div class="wrap">
+
+<div id="lockScreen">
+  <div class="lock-card">
+    <svg class="lock-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+      <rect x="4" y="11" width="16" height="9" rx="1.5"/>
+      <path d="M8 11V7a4 4 0 0 1 8 0v4"/>
+    </svg>
+    <h2>Accès protégé</h2>
+    <p>Saisissez le mot de passe pour consulter le portail de délibération.</p>
+    <form id="lockForm" autocomplete="off">
+      <input type="password" id="lockPassword" placeholder="Mot de passe" autocomplete="off" autofocus>
+      <button type="submit">Entrer</button>
+    </form>
+    <label class="lock-remember">
+      <input type="checkbox" id="lockRemember" checked>
+      Rester connecté sur cet appareil
+    </label>
+    <p class="lock-error" id="lockError">Mot de passe incorrect.</p>
+  </div>
+</div>
+
+<div class="wrap" id="appRoot">
 
   <header>
     <p class="eyebrow">Portail de délibération</p>
@@ -677,11 +868,61 @@
       <div class="zero-list" id="zeroList"></div>
     </section>
 
+    <section class="block" id="moduleBlock">
+      <div class="block-head">
+        <h2>Statistiques par module</h2>
+        <span class="count" id="moduleCount"></span>
+      </div>
+      <p class="block-note">Moyenne, médiane, distribution et taux de réussite (note ≥ 10) de chaque matière, triables par colonne. Les libellés peuvent être tronqués dans le fichier source.</p>
+
+      <div class="module-toolbar">
+        <div class="field">
+          <label for="moduleSearch">Recherche</label>
+          <input type="text" id="moduleSearch" placeholder="Nom du module…">
+        </div>
+        <div class="field">
+          <label for="moduleSemFilter">Semestre</label>
+          <select id="moduleSemFilter">
+            <option value="all">Tous</option>
+            <option value="1">S1</option>
+            <option value="2">S2</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="moduleCritThreshold">Seuil critique (taux réussite &lt;)</label>
+          <input type="number" id="moduleCritThreshold" value="50" step="5" min="0" max="100">
+        </div>
+        <div class="spacer"></div>
+        <button class="btn" id="exportModuleCsv">Exporter en CSV</button>
+      </div>
+
+      <div class="table-scroll">
+        <table id="moduleTable">
+          <thead>
+            <tr>
+              <th data-mkey="label">Module <span class="arrow">↕</span></th>
+              <th data-mkey="semestre" class="num">Sem. <span class="arrow">↕</span></th>
+              <th data-mkey="n" class="num">Effectif noté <span class="arrow">↕</span></th>
+              <th data-mkey="absent" class="num">Non noté <span class="arrow">↕</span></th>
+              <th data-mkey="moyenne" class="num">Moyenne <span class="arrow">↕</span></th>
+              <th data-mkey="mediane" class="num">Médiane <span class="arrow">↕</span></th>
+              <th data-mkey="min" class="num">Min <span class="arrow">↕</span></th>
+              <th data-mkey="max" class="num">Max <span class="arrow">↕</span></th>
+              <th class="num">Distribution</th>
+              <th data-mkey="taux" class="num">Réussite (≥10) <span class="arrow">↕</span></th>
+            </tr>
+          </thead>
+          <tbody id="moduleTbody"></tbody>
+        </table>
+      </div>
+    </section>
+
     <section class="block">
       <div class="block-head">
         <h2>Liste complète</h2>
         <span class="count" id="fullCount"></span>
       </div>
+
       <div class="table-scroll">
         <table id="fullTable">
           <thead>
@@ -719,35 +960,81 @@
 (function(){
   "use strict";
 
+  // ---------------------------------------------------------------------
+  // Authentification par mot de passe (protection légère côté client :
+  // empêche un visiteur non averti de consulter les notes, mais le mot de
+  // passe reste visible dans le code source pour qui irait le chercher).
+  // ---------------------------------------------------------------------
+  const AUTH_HASH = "451eb1d8dcc508c1de7aa58eb3c26a94c61523a37fcdbd933568a9552f995aea";
+  const AUTH_STORAGE_KEY = "pv_portal_auth_ok";
+
+  async function sha256(text) {
+    const enc = new TextEncoder().encode(text);
+    const digest = await crypto.subtle.digest('SHA-256', enc);
+    return Array.from(new Uint8Array(digest)).map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+
+  function unlockApp() {
+    document.getElementById('lockScreen').classList.add('hidden');
+    document.getElementById('appRoot').classList.add('show');
+  }
+
+  function initAuth() {
+    if (localStorage.getItem(AUTH_STORAGE_KEY) === '1') {
+      unlockApp();
+      return;
+    }
+    const form = document.getElementById('lockForm');
+    const input = document.getElementById('lockPassword');
+    const remember = document.getElementById('lockRemember');
+    const errorEl = document.getElementById('lockError');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      errorEl.classList.remove('show');
+      const hash = await sha256(input.value);
+      if (hash === AUTH_HASH) {
+        if (remember.checked) localStorage.setItem(AUTH_STORAGE_KEY, '1');
+        unlockApp();
+      } else {
+        errorEl.classList.add('show');
+        input.value = '';
+        input.focus();
+      }
+    });
+  }
+  initAuth();
+
   let students = [];
   let sheetTitle = "";
   let sortState = { key: "mg", dir: -1 };
   let activeLevelId = null;
+  let moduleCols = [];
 
   // Chemins relatifs au fichier index.html : data/<fichier>.xlsx
   // (à servir depuis GitHub Pages ou un dossier local avec un serveur HTTP)
   const LEVELS = [
-    { group: "Ingénieur", id: "1ing", name: "1ère ING", file: "data/1ere ING.xlsx" },
-    { group: "Ingénieur", id: "2ing", name: "2ème ING", file: "data/2eme ING.xlsx" },
-    { group: "Ingénieur", id: "3ing", name: "3ème ING", file: "data/3eme ING.xlsx" },
+    { group: "Ingénieur", id: "1ing", name: "1ère ING", file: "data/1ere-ING.xlsx" },
+    { group: "Ingénieur", id: "2ing", name: "2ème ING", file: "data/2eme-ING.xlsx" },
+    { group: "Ingénieur", id: "3ing", name: "3ème ING", file: "data/3eme-ING.xlsx" },
 
-    { group: "Licence — Électrotechnique / Automobile", id: "l1elmaut", name: "L1 ELM Automobile", file: "data/L1 ELM Automobile.xlsx" },
-    { group: "Licence — Électrotechnique / Automobile", id: "l2aut", name: "L2 Aut", file: "data/L2 Aut.xlsx" },
-    { group: "Licence — Électrotechnique / Automobile", id: "l2elmaut", name: "L2 ELM Automobile", file: "data/L2 ELM Automobile.xlsx" },
-    { group: "Licence — Électrotechnique / Automobile", id: "l2elm", name: "L2 ELM", file: "data/L2 ELM.xlsx" },
-    { group: "Licence — Électrotechnique / Automobile", id: "l2elt", name: "L2 ELT", file: "data/L2 ELT.xlsx" },
-    { group: "Licence — Électrotechnique / Automobile", id: "l3aut", name: "L3 Aut", file: "data/L3 Aut.xlsx" },
-    { group: "Licence — Électrotechnique / Automobile", id: "l3elm", name: "L3 ELM", file: "data/L3 ELM.xlsx" },
-    { group: "Licence — Électrotechnique / Automobile", id: "l3elt", name: "L3 ELT", file: "data/L3 ELT.xlsx" },
+    { group: "Licence — Électrotechnique / Automobile", id: "l1elmaut", name: "L1 ELM Automobile", file: "data/L1-ELM-Automobile.xlsx" },
+    { group: "Licence — Électrotechnique / Automobile", id: "l2aut", name: "L2 Aut", file: "data/L2-Aut.xlsx" },
+    { group: "Licence — Électrotechnique / Automobile", id: "l2elmaut", name: "L2 ELM Automobile", file: "data/L2-ELM-Automobile.xlsx" },
+    { group: "Licence — Électrotechnique / Automobile", id: "l2elm", name: "L2 ELM", file: "data/L2-ELM.xlsx" },
+    { group: "Licence — Électrotechnique / Automobile", id: "l2elt", name: "L2 ELT", file: "data/L2-ELT.xlsx" },
+    { group: "Licence — Électrotechnique / Automobile", id: "l3aut", name: "L3 Aut", file: "data/L3-Aut.xlsx" },
+    { group: "Licence — Électrotechnique / Automobile", id: "l3elm", name: "L3 ELM", file: "data/L3-ELM.xlsx" },
+    { group: "Licence — Électrotechnique / Automobile", id: "l3elt", name: "L3 ELT", file: "data/L3-ELT.xlsx" },
 
-    { group: "Master", id: "m1aut", name: "M1 Aut", file: "data/M1 Aut.xlsx" },
-    { group: "Master", id: "m1cmd", name: "M1 CMD", file: "data/M1 CMD.xlsx" },
-    { group: "Master", id: "m1elm", name: "M1 ELM", file: "data/M1 ELM.xlsx" },
-    { group: "Master", id: "m1er", name: "M1 ER", file: "data/M1 ER.xlsx" },
-    { group: "Master", id: "m2aut", name: "M2 Aut", file: "data/M2 Aut.xlsx" },
-    { group: "Master", id: "m2cmd", name: "M2 CMD", file: "data/M2 CMD.xlsx" },
-    { group: "Master", id: "m2elm", name: "M2 ELM", file: "data/M2 ELM.xlsx" },
-    { group: "Master", id: "m2er", name: "M2 ER", file: "data/M2 ER.xlsx" },
+    { group: "Master", id: "m1aut", name: "M1 Aut", file: "data/M1-Aut.xlsx" },
+    { group: "Master", id: "m1cmd", name: "M1 CMD", file: "data/M1-CMD.xlsx" },
+    { group: "Master", id: "m1elm", name: "M1 ELM", file: "data/M1-ELM.xlsx" },
+    { group: "Master", id: "m1er", name: "M1 ER", file: "data/M1-ER.xlsx" },
+    { group: "Master", id: "m2aut", name: "M2 Aut", file: "data/M2-Aut.xlsx" },
+    { group: "Master", id: "m2cmd", name: "M2 CMD", file: "data/M2-CMD.xlsx" },
+    { group: "Master", id: "m2elm", name: "M2 ELM", file: "data/M2-ELM.xlsx" },
+    { group: "Master", id: "m2er", name: "M2 ER", file: "data/M2-ER.xlsx" },
   ];
 
   const dropzone = document.getElementById('dropzone');
@@ -828,6 +1115,7 @@
         }
         students = parsed.students;
         sheetTitle = parsed.sheetTitle;
+        moduleCols = parsed.moduleCols;
         setStatus('ok', `${level.name} — ${parsed.students.length} étudiant(s) chargé(s) depuis ${level.file}`);
         controls.classList.add('show');
         render();
@@ -899,6 +1187,7 @@
         }
         students = parsed.students;
         sheetTitle = parsed.sheetTitle;
+        moduleCols = parsed.moduleCols;
         fileName.textContent = file.name;
         filePill.style.display = 'flex';
         stampMark.classList.remove('show');
@@ -938,6 +1227,7 @@
     let mgCol = null, headerRow = null;
     let moyenneCols = [];
     let numColHdr = null, nomColHdr = null, matColHdr = null;
+    let moduleCols = []; // [{col, label}], toute colonne de module entre le 1er semestre et MG
 
     const maxScanHeader = Math.min(grid.length, 40);
     for (let r = 0; r < maxScanHeader; r++) {
@@ -945,6 +1235,7 @@
       let rowHasMg = false;
       let localMoy = [];
       let lNum = null, lNom = null, lMat = null;
+      let localModules = [];
       for (let c = 0; c < row.length; c++) {
         const val = norm(row[c]);
         if (!val) continue;
@@ -954,6 +1245,10 @@
         else if (val.includes('nom') && (val.includes('prénom') || val.includes('prenom'))) lNom = c;
         else if (val === 'nom') lNom = c;
         else if (val === 'matricule') lMat = c;
+        else if (val !== 'semestre 01' && val !== 'semestre 02' && !val.startsWith('semestre')) {
+          // candidat module : libellé texte non vide, pas un en-tête connu
+          localModules.push({ col: c, label: String(row[c]).trim() });
+        }
       }
       if (rowHasMg) {
         headerRow = r;
@@ -961,6 +1256,12 @@
         if (lNum !== null) numColHdr = lNum;
         if (lNom !== null) nomColHdr = lNom;
         if (lMat !== null) matColHdr = lMat;
+        // un module = colonne candidate strictement entre les colonnes de moyennes/MG,
+        // qui n'est ni Num/Nom/Matricule
+        const excluded = new Set([...localMoy]);
+        moduleCols = localModules.filter(m =>
+          !excluded.has(m.col) && m.col !== mgCol && m.col !== lNum && m.col !== lNom && m.col !== lMat
+        );
         break;
       }
     }
@@ -981,6 +1282,13 @@
       throw new Error("colonnes Num/Nom introuvables automatiquement");
     }
 
+    // semestre de chaque module, déduit de sa position par rapport à s1Col
+    // (la colonne "Moyenne du Semestre 1" marque la frontière S1 / S2)
+    moduleCols = moduleCols.map(m => ({
+      ...m,
+      semestre: (s1Col !== null && m.col > s1Col) ? 2 : 1
+    }));
+
     const out = [];
     for (let r = 0; r < grid.length; r++) {
       const row = grid[r] || [];
@@ -998,15 +1306,19 @@
       const s2 = s2Col !== null ? toFloat(row[s2Col]) : null;
       const matricule = matCol !== null ? row[matCol] : null;
 
+      const modules = {};
+      moduleCols.forEach(m => { modules[m.col] = toFloat(row[m.col]); });
+
       out.push({
         num: numStr,
         nom: String(nomVal).trim(),
         matricule: matricule ? String(matricule).trim() : '',
-        s1: s1, s2: s2, mg: mg
+        s1: s1, s2: s2, mg: mg,
+        modules: modules
       });
     }
 
-    return { students: out, sheetTitle: sheetName };
+    return { students: out, sheetTitle: sheetName, moduleCols: moduleCols };
   }
 
   function findDataColumns(grid, mgCol) {
@@ -1128,6 +1440,7 @@
 
     document.getElementById('fullCount').textContent = `${n} étudiant(s)`;
 
+    renderModuleStats();
     renderTable(p);
     results.classList.add('show');
   }
@@ -1137,6 +1450,175 @@
     d.textContent = s;
     return d.innerHTML;
   }
+
+  // ---- Statistiques par module ----
+  let moduleSortState = { key: 'col_order', dir: 1 };
+  let moduleStatsCache = [];
+  let moduleFilterState = { search: '', sem: 'all', critThreshold: 50 };
+  const MODULE_BUCKETS = [
+    { lo: 0,  hi: 8,  label: '0–8' },
+    { lo: 8,  hi: 10, label: '8–10' },
+    { lo: 10, hi: 12, label: '10–12' },
+    { lo: 12, hi: 14, label: '12–14' },
+    { lo: 14, hi: 16, label: '14–16' },
+    { lo: 16, hi: 20.01, label: '16–20' }
+  ];
+
+  function computeModuleStats() {
+    const totalStudents = students.length;
+    return moduleCols.map(m => {
+      const vals = students
+        .map(s => s.modules[m.col])
+        .filter(v => v !== null && v !== undefined && !isNaN(v));
+      const n = vals.length;
+      const absent = totalStudents - n;
+      if (!n) {
+        return { col: m.col, label: m.label, semestre: m.semestre, n: 0, absent,
+                 moyenne: null, mediane: null, min: null, max: null, taux: null, distribution: MODULE_BUCKETS.map(()=>0) };
+      }
+      const moyenne = vals.reduce((a,b)=>a+b,0) / n;
+      const sorted = [...vals].sort((a,b)=>a-b);
+      const mediane = n % 2 ? sorted[(n-1)/2] : (sorted[n/2-1] + sorted[n/2]) / 2;
+      const reussite = vals.filter(v => v >= 10).length;
+      const taux = (reussite / n) * 100;
+      const distribution = MODULE_BUCKETS.map(b => vals.filter(v => v >= b.lo && v < b.hi).length);
+      return {
+        col: m.col, label: m.label, semestre: m.semestre, n, absent,
+        moyenne, mediane, min: Math.min(...vals), max: Math.max(...vals), taux, distribution
+      };
+    });
+  }
+
+  function renderModuleStats() {
+    const block = document.getElementById('moduleBlock');
+    if (!moduleCols.length) { block.style.display = 'none'; return; }
+    block.style.display = '';
+
+    moduleStatsCache = computeModuleStats();
+    document.getElementById('moduleCount').textContent = `${moduleCols.length} module(s)`;
+    renderModuleTable();
+  }
+
+  function renderModuleTable() {
+    const tbody = document.getElementById('moduleTbody');
+    let rows = [...moduleStatsCache];
+
+    // filtres : recherche texte, semestre
+    if (moduleFilterState.search) {
+      const q = moduleFilterState.search.trim().toLowerCase();
+      rows = rows.filter(m => m.label.toLowerCase().includes(q));
+    }
+    if (moduleFilterState.sem !== 'all') {
+      rows = rows.filter(m => String(m.semestre) === moduleFilterState.sem);
+    }
+
+    if (moduleSortState.key !== 'col_order') {
+      const k = moduleSortState.key;
+      rows.sort((a,b) => {
+        let va = a[k], vb = b[k];
+        if (typeof va === 'string') va = va.toLowerCase();
+        if (typeof vb === 'string') vb = vb.toLowerCase();
+        if (va === null || va === undefined) va = -Infinity;
+        if (vb === null || vb === undefined) vb = -Infinity;
+        if (va < vb) return -1 * moduleSortState.dir;
+        if (va > vb) return 1 * moduleSortState.dir;
+        return 0;
+      });
+    }
+
+    document.getElementById('moduleCount').textContent = `${rows.length} / ${moduleStatsCache.length} module(s)`;
+
+    if (!rows.length) {
+      tbody.innerHTML = `<tr><td colspan="10" style="text-align:center;color:var(--ink-soft)">Aucun module ne correspond aux filtres.</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = rows.map(m => {
+      const isCritical = m.taux !== null && m.taux < moduleFilterState.critThreshold;
+      const trClass = isCritical ? ' class="module-critical"' : '';
+      if (!m.n) {
+        return `<tr${trClass}>
+          <td class="module-name">${escapeHtml(m.label)}</td>
+          <td class="num">S${m.semestre}</td>
+          <td class="num" colspan="8" style="text-align:center;color:var(--ink-soft)">aucune donnée (${m.absent} non noté(s))</td>
+        </tr>`;
+      }
+      const taux = m.taux;
+      const rateClass = taux >= 50 ? '' : (taux >= 30 ? 'mid' : 'low');
+      const maxBucket = Math.max(...m.distribution, 1);
+      const spark = m.distribution.map((c, i) => {
+        const h = Math.max(2, Math.round((c / maxBucket) * 24));
+        const cls = MODULE_BUCKETS[i].hi <= 10 ? 'below' : 'above';
+        return `<span class="module-spark-bar ${cls}" style="height:${h}px" title="${MODULE_BUCKETS[i].label} : ${c}"></span>`;
+      }).join('');
+      return `<tr${trClass}>
+        <td class="module-name">${escapeHtml(m.label)}</td>
+        <td class="num">S${m.semestre}</td>
+        <td class="num">${m.n}</td>
+        <td class="num">${m.absent}</td>
+        <td class="num">${m.moyenne.toFixed(2)}</td>
+        <td class="num">${m.mediane.toFixed(2)}</td>
+        <td class="num">${m.min.toFixed(2)}</td>
+        <td class="num">${m.max.toFixed(2)}</td>
+        <td class="num module-spark-cell"><div class="module-spark">${spark}</div></td>
+        <td class="num">
+          <div class="module-rate-cell">
+            <span>${taux.toFixed(1)}%</span>
+            <span class="module-rate-bar"><span class="module-rate-fill ${rateClass}" style="width:${taux}%"></span></span>
+          </div>
+        </td>
+      </tr>`;
+    }).join('');
+  }
+
+  document.querySelectorAll('#moduleTable thead th').forEach(th => {
+    th.addEventListener('click', () => {
+      const key = th.dataset.mkey;
+      if (!key) return;
+      if (moduleSortState.key === key) moduleSortState.dir *= -1;
+      else { moduleSortState.key = key; moduleSortState.dir = key === 'label' ? 1 : -1; }
+      renderModuleTable();
+    });
+  });
+
+  document.getElementById('moduleSearch').addEventListener('input', (e) => {
+    moduleFilterState.search = e.target.value;
+    renderModuleTable();
+  });
+  document.getElementById('moduleSemFilter').addEventListener('change', (e) => {
+    moduleFilterState.sem = e.target.value;
+    renderModuleTable();
+  });
+  document.getElementById('moduleCritThreshold').addEventListener('input', (e) => {
+    moduleFilterState.critThreshold = parseFloat(e.target.value) || 0;
+    renderModuleTable();
+  });
+
+  document.getElementById('exportModuleCsv').addEventListener('click', () => {
+    const header = ['Module','Semestre','Effectif noté','Non noté','Moyenne','Médiane','Min','Max',
+      ...MODULE_BUCKETS.map(b => `Effectif ${b.label}`), 'Taux de réussite (%)'];
+    const lines = [header.join(';')];
+    moduleStatsCache.forEach(m => {
+      lines.push([
+        `"${m.label.replace(/"/g,'""')}"`,
+        `S${m.semestre}`,
+        m.n,
+        m.absent,
+        m.moyenne !== null ? m.moyenne.toFixed(2) : '',
+        m.mediane !== null ? m.mediane.toFixed(2) : '',
+        m.min !== null ? m.min.toFixed(2) : '',
+        m.max !== null ? m.max.toFixed(2) : '',
+        ...m.distribution,
+        m.taux !== null ? m.taux.toFixed(1) : ''
+      ].join(';'));
+    });
+    const blob = new Blob(["\uFEFF" + lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'statistiques_modules.csv';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  });
 
   function renderTable(p) {
     const tbody = document.getElementById('fullTbody');
