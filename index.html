@@ -1270,9 +1270,10 @@
     }
 
     // Détecter la colonne décision (ADR/ADD/AJR/ADN) automatiquement :
-    // on cherche la colonne dont les valeurs non-nulles sont exclusivement
-    // des codes de décision, dans les colonnes proches de Matricule
+    // on cherche la colonne dont les valeurs non-nulles sont quasi-exclusivement
+    // des codes de décision (tolérance 5% pour artefacts comme la chaîne "null")
     const DECISIONS = new Set(['adr','add','ajr','adn']);
+    const INVALID_STRS = new Set(['null','undefined','','n/a','-']);
     let decisionCol = null;
     const searchStart = (matCol !== null ? matCol : nomCol) + 1;
     const searchEnd = Math.min(searchStart + 15, mgCol);
@@ -1281,10 +1282,12 @@
       for (let r = 0; r < grid.length; r++) {
         const v = grid[r] ? grid[r][c] : null;
         if (v !== null && v !== undefined && String(v).trim() !== '') {
-          colVals.push(String(v).trim().toLowerCase());
+          const s = String(v).trim().toLowerCase();
+          if (!INVALID_STRS.has(s)) colVals.push(s); // ignorer artefacts
         }
       }
-      if (colVals.length > 0 && colVals.every(v => DECISIONS.has(v))) {
+      const decCount = colVals.filter(v => DECISIONS.has(v)).length;
+      if (colVals.length >= 5 && decCount / colVals.length >= 0.95) {
         decisionCol = c;
         break;
       }
