@@ -1420,24 +1420,28 @@
     const n = students.length;
     const mgs = students.map(s => s.mg);
     const mean = mgs.reduce((a,b) => a+b, 0) / n;
-    const sorted = [...mgs].sort((a,b)=>a-b);
-    const median = n % 2 ? sorted[(n-1)/2] : (sorted[n/2-1] + sorted[n/2]) / 2;
-    const variance = mgs.reduce((a,b) => a + Math.pow(b-mean,2), 0) / n;
-    const std = Math.sqrt(variance);
-    const admis = students.filter(s => s.mg >= p.seuil);
     const zeros = students.filter(s => s.mg === 0);
     const t1 = students.filter(s => inRange(s.mg, p.t1[0], p.t1[1], true));
-    const tauxReussite = (admis.length / n) * 100;
+
+    // Catégories basées sur la décision officielle
+    const admisOff  = students.filter(s => s.decision === 'ADN' || s.decision === 'ADR'); // admis purs
+    const dettes    = students.filter(s => s.decision === 'ADD');                          // admis avec dette
+    const ajournes  = students.filter(s => s.mg < p.seuil && s.decision !== 'ADD');       // ajournés (AJR + sans décision)
+    // taux de réussite = (admis purs + ADD) / effectif
+    const passants  = admisOff.length + dettes.length;
+    const tauxReussite = (passants / n) * 100;
+    // pour compatibilité avec le reste du code
+    const admis = students.filter(s => s.mg >= p.seuil);
 
     // stat cards
     const statRow = document.getElementById('statRow');
     statRow.innerHTML = `
       <div class="stat-card"><div class="label">Effectif</div><div class="value">${n}</div></div>
       <div class="stat-card"><div class="label">Moyenne promo</div><div class="value">${mean.toFixed(2)}<sup>/20</sup></div></div>
-      <div class="stat-card"><div class="label">Médiane</div><div class="value">${median.toFixed(2)}</div></div>
-      <div class="stat-card"><div class="label">Écart-type</div><div class="value">${std.toFixed(2)}</div></div>
-      <div class="stat-card accent"><div class="label">Admis</div><div class="value">${admis.length} <sup>${tauxReussite.toFixed(1)}%</sup></div></div>
-      <div class="stat-card fail"><div class="label">Ajournés</div><div class="value">${n-admis.length} <sup>${(100-tauxReussite).toFixed(1)}%</sup></div></div>
+      <div class="stat-card accent"><div class="label">Admis (ADN + ADR)</div><div class="value">${admisOff.length} <sup>${(admisOff.length/n*100).toFixed(1)}%</sup></div></div>
+      <div class="stat-card warn"><div class="label">Dette (ADD)</div><div class="value">${dettes.length} <sup>${(dettes.length/n*100).toFixed(1)}%</sup></div></div>
+      <div class="stat-card fail"><div class="label">Ajournés</div><div class="value">${ajournes.length} <sup>${(ajournes.length/n*100).toFixed(1)}%</sup></div></div>
+      <div class="stat-card accent" style="border-top:3px solid var(--accent)"><div class="label">Taux de réussite (ADN+ADR+ADD)</div><div class="value">${tauxReussite.toFixed(1)}<sup>%</sup></div></div>
     `;
 
     // tranche summary
